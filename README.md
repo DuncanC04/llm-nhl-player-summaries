@@ -276,6 +276,67 @@ Update transformers library:
 pip install --upgrade transformers>=4.40.0
 ```
 
+## Performance Evaluation
+
+Both models now automatically track and report timing metrics:
+
+### Training Time
+
+After training completes, you'll see a summary like:
+```
+================================================================================
+TRAINING TIME METRICS
+================================================================================
+Total training time: 1845.32 seconds (30.76 minutes)
+Time per epoch: 615.11 seconds (10.25 minutes)
+================================================================================
+```
+
+### Generation Time
+
+When testing models, timing information is displayed:
+
+1. **Per-summary timing**: Each generated summary shows its generation time
+2. **Summary statistics**: After testing, you'll see:
+   ```
+   ================================================================================
+   GENERATION TIME STATISTICS
+   ================================================================================
+   Number of summaries generated: 3
+   Average time per summary: 2.345 seconds
+   Min time: 2.101 seconds
+   Max time: 2.567 seconds
+   Total time: 7.035 seconds
+   ================================================================================
+   ```
+
+3. **Batch generation**: When using `--generate_all`, you'll see:
+   ```
+   ================================================================================
+   BATCH GENERATION TIME STATISTICS
+   ================================================================================
+   Total players processed: 500
+   Total time: 1172.50 seconds (19.54 minutes)
+   Average time per summary: 2.345 seconds
+   Min time: 2.101 seconds
+   Max time: 2.567 seconds
+   Summaries per minute: 25.6
+   ================================================================================
+   ```
+
+### Example Usage
+
+```bash
+# Train and see training time
+python llm_training/player_summary_advanced.py --num_epochs 3
+
+# Test and see generation times
+python llm_training/player_summary_advanced.py --test_only --num_test 10
+
+# Generate all summaries with timing stats
+python llm_training/player_summary_advanced.py --test_only --generate_all
+```
+
 ## Model Comparison
 
 | Feature | Advanced Model | Simple Model |

@@ -17,6 +17,7 @@ import json
 import os
 import argparse
 import gc
+import time
 from pathlib import Path
 
 # Set environment variable for Keras compatibility with transformers
@@ -317,9 +318,18 @@ def train_model(
     print("\nStarting training...")
     print("You can monitor GPU usage in Task Manager or with nvidia-smi\n")
     
+    # Start timing
+    training_start_time = time.time()
     trainer.train()
+    training_end_time = time.time()
+    training_time = training_end_time - training_start_time
     
-    print("\nTraining completed!")
+    print("\n" + "="*80)
+    print("TRAINING TIME METRICS")
+    print("="*80)
+    print(f"Total training time: {training_time:.2f} seconds ({training_time/60:.2f} minutes)")
+    print(f"Time per epoch: {training_time/num_epochs:.2f} seconds ({training_time/num_epochs/60:.2f} minutes)")
+    print("="*80)
     
     return trainer
 
@@ -347,36 +357,85 @@ def load_finetuned_model(model_dir="./player_summary_model"):
     offload_dir = os.path.join(tempfile.gettempdir(), "model_offload")
     os.makedirs(offload_dir, exist_ok=True)
     
+    # Try different loading strategies
+    model = None
+    loading_errors = []
+    
+    # Strategy 1: Try merging and loading (recommended for inference - MUCH faster)
     try:
-        model = AutoPeftModelForCausalLM.from_pretrained(
+        print("Attempting to merge and load model (best for inference - faster generation)...")
+        peft_model = AutoPeftModelForCausalLM.from_pretrained(
             model_dir,
             device_map="auto",
             torch_dtype=torch.float16,
-            offload_folder=offload_dir
         )
+        # Merge LoRA weights into base model for faster inference
+        # This is critical for speed - merged models are 2-3x faster
+        if hasattr(peft_model, 'merge_and_unload'):
+            print("Merging LoRA weights into base model (this may take a minute)...")
+            model = peft_model.merge_and_unload()
+            print("✓ Model merged and loaded successfully! (Faster inference enabled)")
+        else:
+            # If merge_and_unload not available, use the model as-is
+            model = peft_model
+            print("⚠ Model loaded (merge not available, using PEFT model - will be slower)")
     except Exception as e:
-        print(f"Warning: Error loading with offload_folder: {e}")
-        print("Trying with sequential device_map...")
-        # Try loading with sequential device map
+        loading_errors.append(f"Merge strategy failed: {e}")
+        print(f"Merge strategy failed, trying alternative...")
+        
+        # Strategy 2: Load without merging
         try:
+            print("Attempting to load model without merging...")
             model = AutoPeftModelForCausalLM.from_pretrained(
                 model_dir,
-                device_map="sequential",
+                device_map="auto",
                 torch_dtype=torch.float16,
-                offload_folder=offload_dir
             )
+            print("Model loaded successfully (without merging)!")
         except Exception as e2:
-            print(f"Warning: Sequential loading also failed: {e2}")
-            print("Trying to load to GPU directly (may fail if insufficient memory)...")
-            # Try loading to GPU directly if there's enough memory
-            model = AutoPeftModelForCausalLM.from_pretrained(
-                model_dir,
-                device_map="cuda:0",
-                torch_dtype=torch.float16
-            )
+            loading_errors.append(f"Direct load failed: {e2}")
+            print(f"Direct load failed, trying sequential device map...")
+            
+            # Strategy 3: Sequential device map
+            try:
+                model = AutoPeftModelForCausalLM.from_pretrained(
+                    model_dir,
+                    device_map="sequential",
+                    torch_dtype=torch.float16,
+                )
+                print("Model loaded with sequential device map!")
+            except Exception as e3:
+                loading_errors.append(f"Sequential load failed: {e3}")
+                print(f"Sequential load failed, trying CPU fallback...")
+                
+                # Strategy 4: CPU fallback (slow but should work)
+                try:
+                    model = AutoPeftModelForCausalLM.from_pretrained(
+                        model_dir,
+                        device_map="cpu",
+                        torch_dtype=torch.float32,  # Use float32 for CPU
+                    )
+                    print("Model loaded on CPU (will be slow)!")
+                except Exception as e4:
+                    loading_errors.append(f"CPU load failed: {e4}")
+                    raise RuntimeError(
+                        f"Failed to load model with all strategies:\n" + 
+                        "\n".join(loading_errors)
+                    )
     
-    # Enable cache for inference (was disabled during training)
-    model.config.use_cache = True
+    # Enable cache for inference (was disabled during training) - CRITICAL for speed
+    if hasattr(model, 'config'):
+        model.config.use_cache = True
+    
+    # Try to compile model for faster inference (PyTorch 2.0+)
+    try:
+        if hasattr(torch, 'compile') and torch.cuda.is_available():
+            print("Compiling model for faster inference (PyTorch 2.0+)...")
+            model = torch.compile(model, mode="reduce-overhead", fullgraph=False)
+            print("✓ Model compiled successfully!")
+    except Exception as e:
+        print(f"Note: Model compilation not available or failed: {e}")
+        print("  (This is optional - model will still work, just slightly slower)")
     
     # Load tokenizer with error handling
     try:
@@ -398,8 +457,22 @@ def load_finetuned_model(model_dir="./player_summary_model"):
     return model, tokenizer
 
 
-def generate_player_summary(name, team, position, top_stats, model, tokenizer, max_length=150):
-    """Generate a summary for a player."""
+def generate_player_summary(name, team, position, top_stats, model, tokenizer, max_length=150, return_timing=False):
+    """Generate a summary for a player.
+    
+    Args:
+        name: Player name
+        team: Team abbreviation
+        position: Player position
+        top_stats: List of top statistics
+        model: The model to use for generation
+        tokenizer: The tokenizer
+        max_length: Maximum length of generated summary
+        return_timing: If True, return (summary, generation_time) tuple
+    
+    Returns:
+        Generated summary string, or (summary, generation_time) if return_timing=True
+    """
     stats_text = format_stats_text(top_stats)
     
     # Use the same prompt format as training
@@ -413,11 +486,30 @@ Top Statistics: {stats_text}
 Summary:"""
     
     # Tokenize
-    inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
+    inputs = tokenizer(prompt, return_tensors="pt")
     input_length = inputs.input_ids.shape[1]
+    
+    # Determine device - handle PEFT models correctly
+    device = None
+    if hasattr(model, 'device'):
+        device = model.device
+    elif hasattr(model, 'base_model') and hasattr(model.base_model, 'device'):
+        device = model.base_model.device
+    elif hasattr(model, 'base_model') and hasattr(model.base_model, 'model') and hasattr(model.base_model.model, 'device'):
+        device = model.base_model.model.device
+    elif torch.cuda.is_available():
+        device = torch.device("cuda:0")
+    else:
+        device = torch.device("cpu")
+    
+    # Move inputs to device
+    inputs = {k: v.to(device) for k, v in inputs.items()}
     
     # Set model to eval mode for inference
     model.eval()
+    
+    # Start timing
+    generation_start_time = time.time()
     
     # Generate with better parameters
     with torch.no_grad():
@@ -446,6 +538,9 @@ Summary:"""
                 eos_token_id=tokenizer.eos_token_id,
             )
     
+    generation_end_time = time.time()
+    generation_time = generation_end_time - generation_start_time
+    
     # Decode only the newly generated tokens (not the prompt)
     generated_tokens = outputs[0][input_length:]
     generated_summary = tokenizer.decode(generated_tokens, skip_special_tokens=True)
@@ -460,6 +555,8 @@ Summary:"""
             if ending in generated_summary:
                 generated_summary = generated_summary.split(ending)[0].strip()
     
+    if return_timing:
+        return generated_summary, generation_time
     return generated_summary
 
 
@@ -490,6 +587,9 @@ def test_model(model, tokenizer, data, train_size, num_test=3):
     
     print(f"Testing on {len(test_indices)} players from validation set:\n")
     
+    # Track timing for all generations
+    generation_times = []
+    
     for i, idx in enumerate(test_indices, 1):
         if idx < val_set_size:
             example = data[train_size + idx]
@@ -503,39 +603,59 @@ def test_model(model, tokenizer, data, train_size, num_test=3):
             
             print("\n--- GENERATED SUMMARY ---")
             try:
-                generated = generate_player_summary(
+                generated, gen_time = generate_player_summary(
                     example['name'],
                     example['team'],
                     example['position'],
                     example['topStats'],
                     model,
-                    tokenizer
+                    tokenizer,
+                    return_timing=True
                 )
+                generation_times.append(gen_time)
                 if generated:
                     print(generated)
+                    print(f"\n[Generation time: {gen_time:.3f} seconds]")
                 else:
                     print("[WARNING: Empty generation - model may need more training]")
             except Exception as e:
                 print(f"[ERROR generating summary: {e}]")
             print("=" * 80)
+    
+    # Print summary statistics
+    if generation_times:
+        print("\n" + "=" * 80)
+        print("GENERATION TIME STATISTICS")
+        print("=" * 80)
+        print(f"Number of summaries generated: {len(generation_times)}")
+        print(f"Average time per summary: {sum(generation_times)/len(generation_times):.3f} seconds")
+        print(f"Min time: {min(generation_times):.3f} seconds")
+        print(f"Max time: {max(generation_times):.3f} seconds")
+        print(f"Total time: {sum(generation_times):.3f} seconds")
+        print("=" * 80)
 
 
 def generate_all_summaries(data, model, tokenizer, output_file="generated_summaries.jsonl"):
     """Generate summaries for all players and save to file."""
     results = []
+    generation_times = []
+    
+    total_start_time = time.time()
     
     for i, example in enumerate(data):
         if i % 10 == 0:
             print(f"Processing {i}/{len(data)}...")
         
-        generated_summary = generate_player_summary(
+        generated_summary, gen_time = generate_player_summary(
             example['name'],
             example['team'],
             example['position'],
             example['topStats'],
             model,
-            tokenizer
+            tokenizer,
+            return_timing=True
         )
+        generation_times.append(gen_time)
         
         result = {
             "name": example['name'],
@@ -547,12 +667,28 @@ def generate_all_summaries(data, model, tokenizer, output_file="generated_summar
         }
         results.append(result)
     
+    total_end_time = time.time()
+    total_time = total_end_time - total_start_time
+    
     # Save to file
     with open(output_file, 'w', encoding='utf-8') as f:
         for result in results:
             f.write(json.dumps(result) + '\n')
     
     print(f"\nAll summaries generated and saved to: {output_file}")
+    
+    # Print timing statistics
+    print("\n" + "=" * 80)
+    print("BATCH GENERATION TIME STATISTICS")
+    print("=" * 80)
+    print(f"Total players processed: {len(data)}")
+    print(f"Total time: {total_time:.2f} seconds ({total_time/60:.2f} minutes)")
+    print(f"Average time per summary: {sum(generation_times)/len(generation_times):.3f} seconds")
+    print(f"Min time: {min(generation_times):.3f} seconds")
+    print(f"Max time: {max(generation_times):.3f} seconds")
+    print(f"Summaries per minute: {60 / (sum(generation_times)/len(generation_times)):.1f}")
+    print("=" * 80)
+    
     return results
 
 

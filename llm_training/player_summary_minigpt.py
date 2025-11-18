@@ -15,6 +15,7 @@ import json
 import argparse
 import string
 import random
+import time
 from pathlib import Path
 
 import numpy as np
@@ -292,8 +293,26 @@ def tokenize_text(text, word_to_index, custom_standardization=None):
     return tokens, words
 
 
-def generate_player_summary(model, word_to_index, vocab, maxlen, name, team, position, stats_list, num_tokens=80, top_k=10, temperature=0.8):
-    """Generate a summary for a player given their stats - returns ONLY the summary text"""
+def generate_player_summary(model, word_to_index, vocab, maxlen, name, team, position, stats_list, num_tokens=80, top_k=10, temperature=0.8, return_timing=False):
+    """Generate a summary for a player given their stats - returns ONLY the summary text
+    
+    Args:
+        model: The trained model
+        word_to_index: Dictionary mapping words to token indices
+        vocab: Vocabulary list
+        maxlen: Maximum sequence length
+        name: Player name
+        team: Team abbreviation
+        position: Player position
+        stats_list: List of (stat_name, value, percentile) tuples
+        num_tokens: Maximum number of tokens to generate
+        top_k: Top-k sampling parameter
+        temperature: Temperature for sampling
+        return_timing: If True, return (summary, generation_time) tuple
+    
+    Returns:
+        Generated summary string, or (summary, generation_time) if return_timing=True
+    """
     # Format the stats exactly as in training (matches advanced model format)
     stats_parts = []
     for stat_name, value, percentile in stats_list:
@@ -326,6 +345,9 @@ def generate_player_summary(model, word_to_index, vocab, maxlen, name, team, pos
     current_tokens = start_tokens.copy()
     summary_tokens = []  # Track only summary tokens (after "Summary:")
     found_summary_start = False  # Track when we've started generating the summary
+    
+    # Start timing
+    generation_start_time = time.time()
     
     for step in range(num_tokens):
         current_length = len(current_tokens)
@@ -430,6 +452,10 @@ def generate_player_summary(model, word_to_index, vocab, maxlen, name, team, pos
             # Check last few tokens for natural ending patterns
             recent_words = [vocab[t] if t < len(vocab) else "" for t in summary_tokens[-5:]]
             # Could add logic here to detect natural sentence endings
+    
+    # End timing
+    generation_end_time = time.time()
+    generation_time = generation_end_time - generation_start_time
     
     # Extract only the summary portion (everything after "Summary:")
     prompt_structure_words = {"generate", "concise", "player", "summary", "based", "following", 
@@ -621,6 +647,8 @@ def generate_player_summary(model, word_to_index, vocab, maxlen, name, team, pos
                     generated_text = " ".join(words[i:])
                     break
     
+    if return_timing:
+        return generated_text, generation_time
     return generated_text
 
 
@@ -769,6 +797,9 @@ def train_model(
     
     steps_per_epoch = len(train_texts) // batch_size
     
+    # Start timing
+    training_start_time = time.time()
+    
     history = model.fit(
         text_ds,
         verbose=1,
@@ -776,6 +807,9 @@ def train_model(
         steps_per_epoch=steps_per_epoch,
         callbacks=[text_gen_callback]
     )
+    
+    training_end_time = time.time()
+    training_time = training_end_time - training_start_time
     
     # Save model and tokenizer info
     print(f"\nSaving model to: {output_dir}")
@@ -787,6 +821,14 @@ def train_model(
         json.dump(vocab, f)
     
     print(f"Vocabulary saved to: {vocab_file}")
+    
+    # Print training time metrics
+    print("\n" + "="*80)
+    print("TRAINING TIME METRICS")
+    print("="*80)
+    print(f"Total training time: {training_time:.2f} seconds ({training_time/60:.2f} minutes)")
+    print(f"Time per epoch: {training_time/epochs:.2f} seconds ({training_time/epochs/60:.2f} minutes)")
+    print("="*80)
     print("\nTraining complete!")
     
     return model, vocab, word_to_index
@@ -822,17 +864,22 @@ def test_model(model_path, data_path=None, num_test=3):
     
     print(f"\nTesting on {num_test} examples:\n")
     
+    # Track timing for all generations
+    generation_times = []
+    
     for i in range(min(num_test, len(player_data))):
         player = player_data[i]
         stats_list = [(s['stat'], s['value'], s['pctl']) for s in player['topStats']]
         
-        generated = generate_player_summary(
+        generated, gen_time = generate_player_summary(
             model, word_to_index, vocab, maxlen,
             player['name'],
             player['team'],
             player['position'],
-            stats_list
+            stats_list,
+            return_timing=True
         )
+        generation_times.append(gen_time)
         
         print(f"{'='*80}")
         print(f"Player: {player['name']} ({player['team']} - {player['position']})")
@@ -841,7 +888,20 @@ def test_model(model_path, data_path=None, num_test=3):
         print(player['summary'])
         print(f"\nGENERATED SUMMARY:")
         print(generated)
+        print(f"\n[Generation time: {gen_time:.3f} seconds]")
         print(f"{'='*80}\n")
+    
+    # Print summary statistics
+    if generation_times:
+        print("\n" + "=" * 80)
+        print("GENERATION TIME STATISTICS")
+        print("=" * 80)
+        print(f"Number of summaries generated: {len(generation_times)}")
+        print(f"Average time per summary: {sum(generation_times)/len(generation_times):.3f} seconds")
+        print(f"Min time: {min(generation_times):.3f} seconds")
+        print(f"Max time: {max(generation_times):.3f} seconds")
+        print(f"Total time: {sum(generation_times):.3f} seconds")
+        print("=" * 80)
 
 
 def main():
