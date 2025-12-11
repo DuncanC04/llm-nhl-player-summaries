@@ -18,7 +18,9 @@ import os
 import argparse
 import gc
 import time
+import re
 from pathlib import Path
+from difflib import SequenceMatcher
 
 # Set environment variable for Keras compatibility with transformers
 os.environ["TF_USE_LEGACY_KERAS"] = "1"
@@ -457,6 +459,92 @@ def load_finetuned_model(model_dir="./player_summary_model"):
     return model, tokenizer
 
 
+def correct_name_in_text(text, correct_name, similarity_threshold=0.7):
+    """Correct misspelled player names in generated text.
+    
+    Args:
+        text: The generated text that may contain misspelled names
+        correct_name: The correct player name to use for replacement
+        similarity_threshold: Minimum similarity ratio (0-1) to consider a match
+    
+    Returns:
+        Text with corrected names
+    """
+    if not text or not correct_name:
+        return text
+    
+    # Split name into parts (first and last name)
+    name_parts = correct_name.strip().split()
+    if not name_parts:
+        return text
+    
+    # Create patterns for matching names
+    # We'll look for sequences of words that might be the name
+    corrected_text = text
+    
+    # Method 1: Try exact case-insensitive match first (fast path)
+    # This handles cases where the name is correct but just has wrong capitalization
+    name_pattern = re.escape(correct_name)
+    corrected_text = re.sub(
+        re.compile(name_pattern, re.IGNORECASE),
+        correct_name,
+        corrected_text
+    )
+    
+    # Method 2: For multi-word names, try to find similar sequences
+    if len(name_parts) > 1:
+        # Look for sequences of words that might be the name
+        words = corrected_text.split()
+        name_length = len(name_parts)
+        
+        # Check sequences of words that match the length of the name
+        # Build replacement map first to avoid modifying text during iteration
+        replacements = []
+        for i in range(len(words) - name_length + 1):
+            candidate = ' '.join(words[i:i + name_length])
+            
+            # Quick check: skip if already correct (case-insensitive)
+            if candidate.lower() == correct_name.lower():
+                continue
+            
+            # Calculate similarity (fast for short strings)
+            similarity = SequenceMatcher(None, candidate.lower(), correct_name.lower()).ratio()
+            
+            # If similarity is high enough, mark for replacement
+            if similarity >= similarity_threshold:
+                replacements.append((candidate, i))
+        
+        # Apply replacements (from end to start to preserve indices)
+        if replacements:
+            # Use a single regex pass for all replacements
+            for candidate, _ in reversed(replacements):
+                pattern = r'\b' + re.escape(candidate) + r'\b'
+                corrected_text = re.sub(pattern, correct_name, corrected_text, flags=re.IGNORECASE)
+    
+    # Method 3: For single-word names, check each word individually
+    # This handles cases where a single-word name is misspelled
+    if len(name_parts) == 1:
+        # Single name - check each word in the text
+        words = corrected_text.split()
+        for word in words:
+            # Skip if word is too short, already matches, or is a common word
+            if len(word) < 3 or word.lower() == correct_name.lower():
+                continue
+            
+            # Skip common words that might accidentally match
+            common_words = {'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by'}
+            if word.lower() in common_words:
+                continue
+            
+            similarity = SequenceMatcher(None, word.lower(), correct_name.lower()).ratio()
+            if similarity >= similarity_threshold:
+                # Replace the word with correct name
+                pattern = r'\b' + re.escape(word) + r'\b'
+                corrected_text = re.sub(pattern, correct_name, corrected_text, flags=re.IGNORECASE)
+    
+    return corrected_text
+
+
 def generate_player_summary(name, team, position, top_stats, model, tokenizer, max_length=150, return_timing=False):
     """Generate a summary for a player.
     
@@ -554,6 +642,9 @@ Summary:"""
         for ending in ['\n\n', '\nSummary:', 'Summary:', '###', '---']:
             if ending in generated_summary:
                 generated_summary = generated_summary.split(ending)[0].strip()
+    
+    # Post-process to correct name misspellings
+    generated_summary = correct_name_in_text(generated_summary, name)
     
     if return_timing:
         return generated_summary, generation_time

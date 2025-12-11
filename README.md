@@ -1,226 +1,141 @@
 # Player Summary Generator
 
-Generate AI-powered player summaries from statistics using either a lightweight MiniGPT model or a fine-tuned Mistral-7B model.
+Fine-tune AI models to generate player summaries from statistics. Two model options:
+- **Mistral-7B (Advanced)**: High-quality summaries, requires GPU (Recommended)
+- **MiniGPT (Simple)**: Lightweight model, lower accuracy, runs on CPU
 
-## Models
+## Recommended: Mistral-7B (Advanced)
 
-### 1. Advanced Model (Mistral-7B)
-- **File**: `llm_training/player_summary_advanced.py`
-- **Architecture**: Mistral-7B with QLoRA fine-tuning
-- **Requirements**: NVIDIA GPU with 12GB+ VRAM recommended
-- **Training Time**: 30-60 minutes on RTX 3060
-- **Quality**: High-quality, natural language summaries
+The advanced model uses Mistral-7B with QLoRA fine-tuning to generate high-quality player summaries. **This is the recommended option** for best results.
 
-### 2. Simple Model (MiniGPT)
-- **File**: `llm_training/player_summary_minigpt.py`
-- **Architecture**: Small transformer (~5M parameters)
-- **Requirements**: CPU or basic GPU
-- **Training Time**: 30-60 minutes on CPU, 5-15 minutes on GPU
-- **Quality**: Good summaries, faster training
+### Quick Start
 
-## Quick Start
+#### 1. Setup
 
-### 1. Setup Environment
-
-**Windows:**
-```cmd
-python setup.py
-```
-
-**Linux/Mac:**
 ```bash
+# Create virtual environment and install dependencies
 python setup.py
-```
 
-Or manually:
-```bash
-python -m venv llm_env
-llm_env\Scripts\activate.bat  # Windows CMD
+# Activate environment
+llm_env\Scripts\activate.bat  # Windows
 # or: source llm_env/bin/activate  # Linux/Mac
-pip install -r requirements.txt
 ```
 
-### 2. Prepare Data
+#### 2. Prepare Data
 
-Make sure you have the training data at:
-```
-Data/out/aiTop10Stats_complete.jsonl
-```
+**Note:** Data files are not included in this repository. You'll need to provide your own CSV files or training data.
 
-If you need to generate the training data from CSV files, use the data preparation scripts:
+Create the training data from CSV files:
 ```bash
-# Generate JSONL file with top 10 stats for each player
+# Place your CSV files in Data/ directory first
 python scripts/generate_top10_stats_jsonl.py \
     --skaters Data/skaters_24_25.csv \
     --goalies Data/goalies_24_25.csv \
     --output Data/out/aiTop10Stats_complete.jsonl
 ```
 
-### 3. Train a Model
+Or use an existing JSONL file with the structure shown in the Data Format section below.
 
-**Advanced Model (Mistral-7B):**
+#### 3. Train Model
+
 ```bash
 python llm_training/player_summary_advanced.py
 ```
 
-**Simple Model (MiniGPT):**
+#### 4. Test Model
+
 ```bash
-python llm_training/player_summary_minigpt.py
-```
+# Test on 3 examples (default)
+python llm_training/player_summary_advanced.py --test_only
 
-### 4. Test a Model
-
-**Advanced Model:**
-```bash
-# Test on default 3 examples
-python llm_training/player_summary_advanced.py --test_only --output_dir ./player_summary_model
-
-# Test on more players (e.g., 10 examples)
+# Test on more examples
 python llm_training/player_summary_advanced.py --test_only --num_test 10
 
-# Test on all validation examples
-python llm_training/player_summary_advanced.py --test_only --num_test -1
+# Generate summaries for all players
+python llm_training/player_summary_advanced.py --test_only --generate_all
 ```
 
-**Simple Model:**
-```bash
-python llm_training/player_summary_minigpt.py --test_only --output_dir ./player_summary_minigpt.keras
-```
-
-## Advanced Usage
+## Configuration
 
 ### Advanced Model Options
 
 ```bash
-# Custom training parameters
 python llm_training/player_summary_advanced.py \
     --num_epochs 5 \
     --batch_size 2 \
     --learning_rate 1e-4 \
-    --model_name mistralai/Mistral-7B-v0.1
-
-# Test on more players (10 examples)
-python llm_training/player_summary_advanced.py --test_only --num_test 10
-
-# Generate summaries for all players
-python llm_training/player_summary_advanced.py --generate_all
-
-# Use a different model
-python llm_training/player_summary_advanced.py --model_name microsoft/phi-2
+    --output_dir ./player_summary_model
 ```
 
-### Simple Model Options
-
-```bash
-# Custom training parameters
-python llm_training/player_summary_minigpt.py \
-    --epochs 30 \
-    --batch_size 64 \
-    --vocab_size 15000 \
-    --maxlen 256
-```
-
-## Command-Line Arguments
-
-### Advanced Model
-
-- `--data_path`: Path to JSONL data file (default: auto-detect)
-- `--model_name`: Model to fine-tune (default: mistralai/Mistral-7B-v0.1)
-- `--output_dir`: Directory to save model (default: ./player_summary_model)
+**Common Arguments:**
 - `--num_epochs`: Number of training epochs (default: 3)
 - `--batch_size`: Training batch size (default: 4)
 - `--learning_rate`: Learning rate (default: 2e-4)
 - `--max_seq_length`: Maximum sequence length (default: 512)
-- `--test_only`: Only test an existing model (skip training)
-- `--num_test`: Number of test examples (default: 3, use -1 for all validation examples)
+- `--test_only`: Skip training, only test existing model
+- `--num_test`: Number of test examples (default: 3, use -1 for all)
 - `--generate_all`: Generate summaries for all players
-- `--no_4bit`: Disable 4-bit quantization
-
-### Simple Model
-
-- `--data_path`: Path to JSONL data file (default: auto-detect)
-- `--output_dir`: Output path for trained model (default: ./player_summary_minigpt.keras)
-- `--test_only`: Only test an existing model (skip training)
-- `--epochs`: Number of training epochs (default: 20)
-- `--batch_size`: Training batch size (default: 32)
-- `--vocab_size`: Vocabulary size (default: 10000)
-- `--maxlen`: Maximum sequence length (default: 128)
 
 ## Requirements
 
 - Python 3.8+
-- **Advanced Model**: 
-  - NVIDIA GPU with 8GB+ VRAM (recommended: 12GB+)
-  - PyTorch with CUDA support (see installation below)
-- **Simple Model**: 
-  - CPU or basic GPU sufficient
-  - TensorFlow/Keras
+- **Advanced Model**: NVIDIA GPU with 8GB+ VRAM (12GB+ recommended)
+- PyTorch with CUDA support
 
-See `requirements.txt` for full dependency list.
+See `requirements.txt` for full dependencies.
 
-### Fixing Keras 3 / Transformers Compatibility
+## Installation Issues
 
-If you encounter errors about Keras 3 not being supported by transformers:
+### PyTorch CUDA Support
 
+If PyTorch shows "CUDA available: False", install CUDA-enabled PyTorch:
+
+**Windows/Linux/Mac:**
 ```bash
-# Run the compatibility fix script
-python fix_keras_compatibility.py
+# Activate virtual environment first
+llm_env\Scripts\activate.bat  # Windows
+# or: source llm_env/bin/activate  # Linux/Mac
 
-# Or manually install tf-keras
-pip install tf-keras>=2.15.0
-```
+# Uninstall CPU-only version
+pip uninstall -y torch torchvision torchaudio
 
-The advanced model script automatically sets `TF_USE_LEGACY_KERAS=1` to use the backwards-compatible tf-keras with transformers, while the simple model continues using Keras 3.
+# Install CUDA version (CUDA 12.1)
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 
-### Installing PyTorch with CUDA Support
-
-If you have an NVIDIA GPU but PyTorch shows "CUDA available: False":
-
-**Windows - PowerShell (Recommended):**
-```powershell
-# Run the PowerShell script
-.\install_pytorch_cuda.ps1
-
-# If you get execution policy error, run:
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-# Then run the script again
-```
-
-**Windows - Command Prompt:**
-```cmd
-install_pytorch_cuda.bat
-```
-
-**Manual Installation (if scripts don't work):**
-```cmd
-# 1. Activate virtual environment
-llm_env\Scripts\activate.bat
-
-# 2. Uninstall CPU-only version
-python -m pip uninstall -y torch torchvision torchaudio
-
-# 3. Install CUDA version (CUDA 12.1)
-python -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-
-# 4. Verify installation
+# Verify installation
 python -c "import torch; print(f'CUDA available: {torch.cuda.is_available()}')"
 ```
 
-**Linux/Mac:**
+### Keras Compatibility
+
+If you see Keras 3 errors:
 ```bash
-chmod +x install_pytorch_cuda.sh
-./install_pytorch_cuda.sh
+python utils/fix_keras_compatibility.py
 ```
 
-**Important:** 
-- Make sure you're using the virtual environment's Python, not system Python
-- Restart your terminal/Python environment after installing PyTorch with CUDA
-- The installation downloads ~2.5GB, so it may take several minutes
+## Model Comparison
+
+| Feature | Advanced Model (Mistral-7B) | Simple Model (MiniGPT) |
+|---------|----------------------------|------------------------|
+| Status | ✅ Recommended | ⚠️ Lower Accuracy |
+| Base Model | Mistral-7B | Custom Transformer |
+| Parameters | ~7B | ~5M |
+| GPU Required | Yes (8GB+) | No (CPU sufficient) |
+| Training Time | 30-60 min | 30-60 min (CPU) |
+| Model Size | ~100MB (LoRA) | ~20MB |
+| Quality | Excellent | Limited (model too small) |
+
+## Troubleshooting
+
+**Out of Memory:** Reduce `--batch_size` to 1 or 2
+
+**Slow Training:** Normal for first epoch; subsequent epochs should be faster
+
+**CUDA Errors:** Verify with `python -c "import torch; print(torch.cuda.is_available())"`. If False, see PyTorch CUDA Support section above.
 
 ## Data Format
 
-Input data should be in JSONL format with the following structure:
-
+Training data should be JSONL format:
 ```json
 {
   "name": "Connor McDavid",
@@ -234,125 +149,48 @@ Input data should be in JSONL format with the following structure:
 }
 ```
 
-## Troubleshooting
+---
 
-### PowerShell Execution Policy Error
+## Simple Model: MiniGPT (Lower Accuracy)
 
-If you get errors activating the virtual environment in PowerShell:
+The MiniGPT model (`llm_training/player_summary_minigpt.py`) is a lightweight alternative that runs on CPU. **It works but produces lower quality summaries** due to the small model size (~5M parameters).
 
-```powershell
-# Use CMD to run batch file
-cmd /c llm_env\Scripts\activate.bat
+### When to Use MiniGPT
 
-# Or change execution policy (one-time)
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-```
+- You don't have access to a GPU
+- You want faster training/inference
+- You can accept lower accuracy for experimental purposes
+- You're testing the pipeline before investing in GPU resources
 
-### Permission Denied Error
+### Limitations
 
-If you see permission errors with the virtual environment:
+- **Lower accuracy**: The small model size (~5M parameters) limits its ability to generate high-quality summaries
+- Output quality is significantly worse than the advanced model
+- May produce less coherent or relevant summaries
+- Not recommended for production use
 
-```bash
-# Close all Python processes
-taskkill /F /IM python.exe /T  # Windows
-
-# Delete and recreate virtual environment
-rmdir /s /q llm_env  # Windows
-rm -rf llm_env       # Linux/Mac
-python -m venv llm_env
-```
-
-### Out of Memory (OOM) Errors
-
-For the advanced model, reduce batch size:
-```bash
-python llm_training/player_summary_advanced.py --batch_size 2
-```
-
-### Tokenizer Loading Error
-
-Update transformers library:
-```bash
-pip install --upgrade transformers>=4.40.0
-```
-
-## Performance Evaluation
-
-Both models now automatically track and report timing metrics:
-
-### Training Time
-
-After training completes, you'll see a summary like:
-```
-================================================================================
-TRAINING TIME METRICS
-================================================================================
-Total training time: 1845.32 seconds (30.76 minutes)
-Time per epoch: 615.11 seconds (10.25 minutes)
-================================================================================
-```
-
-### Generation Time
-
-When testing models, timing information is displayed:
-
-1. **Per-summary timing**: Each generated summary shows its generation time
-2. **Summary statistics**: After testing, you'll see:
-   ```
-   ================================================================================
-   GENERATION TIME STATISTICS
-   ================================================================================
-   Number of summaries generated: 3
-   Average time per summary: 2.345 seconds
-   Min time: 2.101 seconds
-   Max time: 2.567 seconds
-   Total time: 7.035 seconds
-   ================================================================================
-   ```
-
-3. **Batch generation**: When using `--generate_all`, you'll see:
-   ```
-   ================================================================================
-   BATCH GENERATION TIME STATISTICS
-   ================================================================================
-   Total players processed: 500
-   Total time: 1172.50 seconds (19.54 minutes)
-   Average time per summary: 2.345 seconds
-   Min time: 2.101 seconds
-   Max time: 2.567 seconds
-   Summaries per minute: 25.6
-   ================================================================================
-   ```
-
-### Example Usage
+### Usage
 
 ```bash
-# Train and see training time
-python llm_training/player_summary_advanced.py --num_epochs 3
+# Train MiniGPT model
+python llm_training/player_summary_minigpt.py
 
-# Test and see generation times
-python llm_training/player_summary_advanced.py --test_only --num_test 10
+# Test MiniGPT model (default: ./models/minigpt/player_summary_minigpt.keras)
+python llm_training/player_summary_minigpt.py --test_only
 
-# Generate all summaries with timing stats
-python llm_training/player_summary_advanced.py --test_only --generate_all
+# Custom training parameters
+python llm_training/player_summary_minigpt.py \
+    --epochs 30 \
+    --batch_size 64 \
+    --vocab_size 15000 \
+    --maxlen 256 \
+    --output_dir ./models/minigpt/player_summary_minigpt.keras
 ```
 
-## Model Comparison
+**Recommendation:** Use the **Mistral-7B (Advanced)** model for best results. Only use MiniGPT if you specifically need a CPU-only solution and can accept lower quality output.
 
-| Feature | Advanced Model | Simple Model |
-|---------|---------------|--------------|
-| Base Model | Mistral-7B | Custom Transformer |
-| Parameters | ~7B | ~5M |
-| GPU Required | Yes (12GB+) | No |
-| Training Time | 30-60 min | 30-60 min (CPU) |
-| Model Size | ~100MB (LoRA) | ~20MB |
-| Quality | Excellent | Good |
-| Speed | Fast inference | Very fast inference |
+---
 
 ## License
 
-This code is provided as-is. Please respect:
-- Model licenses (Mistral-7B: Apache 2.0)
-- Your data source licenses
-- Fair use guidelines for generated content
-
+MIT License - see `LICENSE` file for details.

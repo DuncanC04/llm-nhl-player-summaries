@@ -2,12 +2,26 @@
 """
 Player Summary Generator - MiniGPT Model
 
+⚠️ NOTE: LOWER ACCURACY DUE TO SMALL MODEL SIZE ⚠️
+
+This is a lightweight transformer model that works but produces lower quality
+summaries compared to the advanced Mistral-7B model. The small model size
+(~5M parameters) limits its accuracy and coherence.
+
+For best results, use player_summary_advanced.py (Mistral-7B).
+
 A lightweight transformer model for generating player summaries.
 Based on Mini-GPT architecture - simpler and faster than large language models.
 Can run on CPU or basic GPU.
 
 This model uses TensorFlow/Keras and is much smaller (~5M parameters) than
 the advanced Mistral-7B model.
+
+Limitations:
+- Lower accuracy due to small model size
+- Output quality is limited compared to Mistral-7B
+- May produce less coherent summaries
+- Best suited for CPU-only environments where lower quality is acceptable
 """
 
 import os
@@ -654,7 +668,7 @@ def generate_player_summary(model, word_to_index, vocab, maxlen, name, team, pos
 
 def train_model(
     data_path=None,
-    output_dir="./player_summary_minigpt.keras",
+    output_dir="./models/minigpt/player_summary_minigpt.keras",
     vocab_size=20000,  # Increased from 10000 to reduce [UNK] tokens
     maxlen=128,
     embed_dim=256,
@@ -917,8 +931,8 @@ def main():
     parser.add_argument(
         "--output_dir",
         type=str,
-        default="./player_summary_minigpt.keras",
-        help="Output path for trained model (default: ./player_summary_minigpt.keras)"
+        default="./models/minigpt/player_summary_minigpt.keras",
+        help="Output path for trained model (default: ./models/minigpt/player_summary_minigpt.keras)"
     )
     parser.add_argument(
         "--test_only",
