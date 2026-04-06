@@ -1,8 +1,10 @@
 # Player Summary Generator
 
-Fine-tune AI models to generate player summaries from statistics. Two model options:
-- **Mistral-7B (Advanced)**: High-quality summaries, requires GPU (Recommended)
-- **MiniGPT (Simple)**: Lightweight model, lower accuracy, runs on CPU
+Fine-tune **Mistral-7B** with QLoRA to generate player summaries from statistics (GPU required).
+
+**Cloned from GitHub?** Use the step-by-step guide in **[docs/getting-started.md](docs/getting-started.md)** (environment, your own JSONL data, training, and full evaluation). More detail: **[docs/custom-dataset.md](docs/custom-dataset.md)** (schema), **[docs/models-and-evaluation.md](docs/models-and-evaluation.md)** (metrics + adding future models).
+
+Continuous integration runs a **no-GPU smoke test** of the evaluation stack (see [.github/workflows/ci.yml](.github/workflows/ci.yml)).
 
 ## Recommended: Mistral-7B (Advanced)
 
@@ -51,8 +53,19 @@ python llm_training/player_summary_advanced.py --test_only
 # Test on more examples
 python llm_training/player_summary_advanced.py --test_only --num_test 10
 
-# Generate summaries for all players
+# Export validation predictions for evaluation (PARENT, BLEU, ROUGE, …)
+python llm_training/player_summary_advanced.py --test_only --num_test -1 \
+  --export_predictions outputs/mistral_val_predictions.jsonl
+
+# Generate summaries for all players (also writes eval-ready id + generated + timing + peak_gpu_mb)
 python llm_training/player_summary_advanced.py --test_only --generate_all
+```
+
+Then run metrics (after `pip install -r requirements-eval.txt`):
+
+```bash
+python -m evaluation.run_eval --gold Data/out/aiTop10Stats_complete.jsonl \
+  --pred outputs/mistral_val_predictions.jsonl --out outputs/eval_report.json
 ```
 
 ## Configuration
@@ -75,6 +88,7 @@ python llm_training/player_summary_advanced.py \
 - `--test_only`: Skip training, only test existing model
 - `--num_test`: Number of test examples (default: 3, use -1 for all)
 - `--generate_all`: Generate summaries for all players
+- `--export_predictions`: Path to JSONL written after validation testing (for `evaluation.run_eval`)
 
 ## Requirements
 
@@ -106,24 +120,23 @@ pip install torch torchvision torchaudio --index-url https://download.pytorch.or
 python -c "import torch; print(f'CUDA available: {torch.cuda.is_available()}')"
 ```
 
-### Keras Compatibility
+### Keras / Transformers compatibility
 
-If you see Keras 3 errors:
+If the Transformers stack reports Keras-related import errors, try:
+
 ```bash
 python utils/fix_keras_compatibility.py
 ```
 
-## Model Comparison
+## Mistral-7B at a glance
 
-| Feature | Advanced Model (Mistral-7B) | Simple Model (MiniGPT) |
-|---------|----------------------------|------------------------|
-| Status | ✅ Recommended | ⚠️ Lower Accuracy |
-| Base Model | Mistral-7B | Custom Transformer |
-| Parameters | ~7B | ~5M |
-| GPU Required | Yes (8GB+) | No (CPU sufficient) |
-| Training Time | 30-60 min | 30-60 min (CPU) |
-| Model Size | ~100MB (LoRA) | ~20MB |
-| Quality | Excellent | Limited (model too small) |
+| Feature | Value |
+|---------|--------|
+| Base model | Mistral-7B |
+| Fine-tuning | QLoRA (LoRA adapters) |
+| GPU | NVIDIA, 8GB+ VRAM (12GB+ recommended) |
+| Typical training time | ~30–60 minutes |
+| Adapter size on disk | ~100MB (order of magnitude) |
 
 ## Troubleshooting
 
@@ -151,43 +164,52 @@ Training data should be JSONL format:
 
 ---
 
-## Simple Model: MiniGPT (Lower Accuracy)
+## Evaluation (automatic + human)
 
-The MiniGPT model (`llm_training/player_summary_minigpt.py`) is a lightweight alternative that runs on CPU. **It works but produces lower quality summaries** due to the small model size (~5M parameters).
-
-### When to Use MiniGPT
-
-- You don't have access to a GPU
-- You want faster training/inference
-- You can accept lower accuracy for experimental purposes
-- You're testing the pipeline before investing in GPU resources
-
-### Limitations
-
-- **Lower accuracy**: The small model size (~5M parameters) limits its ability to generate high-quality summaries
-- Output quality is significantly worse than the advanced model
-- May produce less coherent or relevant summaries
-- Not recommended for production use
-
-### Usage
+### 1. Install eval dependencies
 
 ```bash
-# Train MiniGPT model
-python llm_training/player_summary_minigpt.py
+# Windows
+llm_env\Scripts\activate.bat
+# Linux / macOS
+# source llm_env/bin/activate
 
-# Test MiniGPT model (default: ./models/minigpt/player_summary_minigpt.keras)
-python llm_training/player_summary_minigpt.py --test_only
-
-# Custom training parameters
-python llm_training/player_summary_minigpt.py \
-    --epochs 30 \
-    --batch_size 64 \
-    --vocab_size 15000 \
-    --maxlen 256 \
-    --output_dir ./models/minigpt/player_summary_minigpt.keras
+pip install -r requirements-eval.txt
 ```
 
-**Recommendation:** Use the **Mistral-7B (Advanced)** model for best results. Only use MiniGPT if you specifically need a CPU-only solution and can accept lower quality output.
+PARENT is implemented in-repo (`evaluation/parent_metric.py`, word-overlap variant from Dhingra et al., 2019). See the module docstring in that file for notes on external implementations (Google Research `table_text_eval`, KaijuML/parent). Other automatic metrics use the packages above.
+
+### 2. Export predictions JSONL
+
+Each line must include `id` (use the same ID as gold: run Python `from evaluation.jsonl_table import stable_example_id; stable_example_id(row)` on each gold row), plus `generated` text. Optional efficiency fields: `generation_time_s`, `num_output_tokens`, and (PyTorch + CUDA) `peak_gpu_mb` per example.
+
+`llm_training/player_summary_advanced.py` writes eval-ready JSONL via **`--export_predictions`** (validation split) or **`--generate_all`** (full dataset): `id`, `generated`, timing, `num_output_tokens`, and `peak_gpu_mb` when CUDA is available.
+
+### 3. Run automatic metrics
+
+From the repository root:
+
+```bash
+python -m evaluation.run_eval --gold Data/out/aiTop10Stats_complete.jsonl --pred path/to/predictions.jsonl --out eval_report.json
+```
+
+Default metrics: `parent`, `bleu`, `chrf`, `rouge`, `numeric_coverage`. Add BERTScore (downloads model weights on first run):
+
+```bash
+python -m evaluation.run_eval --gold ... --pred ... --out ... --metrics parent,bleu,chrf,rouge,bertscore,numeric_coverage
+```
+
+### 4. Human rubric
+
+1. Copy `evaluation/human_rubric_template.csv` and follow `evaluation/RATER_INSTRUCTIONS.txt`.
+2. Fill `example_id` from `eval_report.json` → `per_example` → `id`.
+3. Merge with automatic scores:
+
+```bash
+python -m evaluation.merge_human --human my_ratings.csv --report eval_report.json --out eval_plus_human.json
+```
+
+The merged JSON includes `automatic_by_id`, `human_per_example`, and `combined_by_id` (aligned automatic + human fields per `example_id`).
 
 ---
 

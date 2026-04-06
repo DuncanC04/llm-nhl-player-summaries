@@ -1,52 +1,49 @@
 #!/usr/bin/env python3
-"""Test Keras 3 / Transformers compatibility"""
+"""Smoke-test core imports for the Mistral training stack."""
 
 import os
 import sys
 
-print("="*60)
-print("Testing Keras 3 / Transformers Compatibility")
-print("="*60)
+print("=" * 60)
+print("Testing Mistral / Transformers stack")
+print("=" * 60)
 print()
 
-# Test 1: Transformers with legacy Keras
-print("Test 1: Importing transformers with TF_USE_LEGACY_KERAS=1")
 os.environ["TF_USE_LEGACY_KERAS"] = "1"
+
+print("Test 1: transformers")
 try:
     import transformers
-    print(f"[OK] transformers imported successfully (version: {transformers.__version__})")
+
+    print(f"  [OK] transformers {transformers.__version__}")
 except Exception as e:
-    print(f"[ERROR] Failed to import transformers: {e}")
+    print(f"  [ERROR] {e}")
     sys.exit(1)
 
-# Test 2: Keras 3 for MiniGPT
-print()
-print("Test 2: Importing Keras 3 (for MiniGPT)")
-os.environ["TF_USE_LEGACY_KERAS"] = "0"
+print("Test 2: torch")
 try:
-    import keras
-    print(f"[OK] Keras imported successfully (version: {keras.__version__})")
-    from keras import layers
-    print("[OK] Keras layers imported successfully")
+    import torch
+
+    print(f"  [OK] torch {torch.__version__}")
+    print(f"  CUDA available: {torch.cuda.is_available()}")
 except Exception as e:
-    print(f"[ERROR] Failed to import Keras 3: {e}")
+    print(f"  [ERROR] {e}")
     sys.exit(1)
 
-# Test 3: tf-keras availability
-print()
-print("Test 3: Checking tf-keras availability")
+print("Test 3: peft + trl (training)")
 try:
-    import tf_keras
-    print(f"[OK] tf-keras available (version: {tf_keras.__version__})")
-except ImportError:
-    print("[WARN] tf-keras not found (may not be needed if transformers works)")
+    import peft
+    import trl
+
+    print(
+        f"  [OK] peft {getattr(peft, '__version__', '?')}, "
+        f"trl {getattr(trl, '__version__', '?')}"
+    )
+except Exception as e:
+    print(f"  [ERROR] {e}")
+    sys.exit(1)
 
 print()
-print("="*60)
-print("[SUCCESS] All compatibility tests passed!")
-print("="*60)
-print()
-print("The advanced model will use TF_USE_LEGACY_KERAS=1")
-print("The simple model will use Keras 3")
-print("Both should work without conflicts.")
-
+print("=" * 60)
+print("[SUCCESS] Core imports OK")
+print("=" * 60)

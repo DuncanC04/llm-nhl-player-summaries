@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
-"""
-Unified setup script for Player Summary Generator
-Supports both Advanced (Mistral-7B) and Simple (MiniGPT) models
-"""
+"""Unified setup script for Player Summary Generator (Mistral-7B + QLoRA)."""
 
 import subprocess
 import sys
@@ -180,9 +177,8 @@ def main():
         print("  Windows PowerShell: cmd /c llm_env\\Scripts\\activate.bat")
     else:
         print("  source llm_env/bin/activate")
-    print("\nTo train the models:")
-    print("  Advanced model: python llm_training/player_summary_advanced.py")
-    print("  Simple model:   python llm_training/player_summary_minigpt.py")
+    print("\nTo train:")
+    print("  python llm_training/player_summary_advanced.py")
     print()
 
 

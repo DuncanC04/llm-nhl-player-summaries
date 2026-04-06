@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  eval-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install eval metric dependencies
+        run: pip install sacrebleu rouge-score
+
+      - name: Smoke test evaluation pipeline
+        run: python scripts/smoke_eval.py

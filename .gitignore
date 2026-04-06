@@ -87,6 +87,9 @@ Thumbs.db
 # Papers (research papers shouldn't be in repo)
 Papers/
 
+# Local eval / prediction exports (keep repo clean)
+outputs/
+
 # Temporary files
 *.tmp
 *.temp

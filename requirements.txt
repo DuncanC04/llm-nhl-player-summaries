@@ -1,7 +1,5 @@
-# Requirements for Player Summary Generator
-# Supports both Advanced (Mistral-7B) and Simple (MiniGPT) models
+# Requirements for Player Summary Generator (Mistral-7B + QLoRA)
 
-# Advanced Model (Mistral-7B) Requirements
 torch>=2.0.0
 transformers>=4.40.0
 accelerate>=0.25.0
@@ -12,12 +10,6 @@ trl>=0.7.10
 sentencepiece
 protobuf
 
-# Simple Model (MiniGPT) Requirements
-tensorflow>=2.14.0
-keras>=3.0.0
-tf-keras>=2.15.0  # Backwards compatible Keras for transformers compatibility
-
-# Common Requirements
 numpy>=1.24.0
 pandas>=1.5.0
 scipy

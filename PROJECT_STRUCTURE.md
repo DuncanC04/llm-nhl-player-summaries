@@ -2,66 +2,66 @@
 
 ```
 CS_Fall_Research/
-├── README.md                 # Main documentation
+├── README.md                 # Main documentation (quick start + evaluation summary)
+├── docs/                     # Detailed guides (GitHub-friendly)
+│   ├── README.md             # Index of doc pages
+│   ├── getting-started.md    # Clone → train Mistral → evaluate
+│   ├── custom-dataset.md     # JSONL schema, custom data, stable IDs
+│   └── models-and-evaluation.md  # Metrics, adding future models
 ├── LICENSE                   # MIT License
-├── requirements.txt          # Python dependencies
-├── setup.py                  # Setup script for virtual environment
+├── requirements.txt          # Mistral / PyTorch stack
+├── requirements-eval.txt     # Optional: PARENT-related automatic metrics (BLEU, ROUGE, …)
+├── setup.py                  # Interactive venv + dependency installer
 │
-├── llm_training/             # Training scripts
-│   ├── player_summary_advanced.py  # Mistral-7B model (Recommended)
-│   └── player_summary_minigpt.py   # MiniGPT model (Lower accuracy)
+├── evaluation/               # Table-to-text metrics (model-agnostic)
+│   ├── run_eval.py           # CLI: gold + predictions → eval_report.json
+│   ├── merge_human.py        # Join human rubric CSV with eval_report
+│   ├── parent_metric.py      # PARENT (Dhingra et al., 2019)
+│   ├── automatic_metrics.py  # BLEU, chrF++, ROUGE, BERTScore, numeric coverage
+│   ├── jsonl_table.py        # Records + stable_example_id for alignment
+│   ├── human_rubric_template.csv
+│   └── RATER_INSTRUCTIONS.txt
 │
-├── scripts/                  # Data processing scripts
-│   ├── generate_top10_stats_jsonl.py      # Generate training data from CSV
-│   └── generate_player_summaries.py       # Generate player summaries
+├── .github/workflows/
+│   └── ci.yml                # Smoke test evaluation (no GPU)
 │
-├── utils/                    # Utility scripts
-│   ├── fix_keras_compatibility.py  # Fix Keras 3 compatibility
-│   └── test_compatibility.py       # Test compatibility
+├── llm_training/
+│   └── player_summary_advanced.py  # Mistral-7B + QLoRA
 │
-├── Data/                     # Data files (not in git)
-│   ├── *.csv                # Input CSV files
-│   └── out/                 # Generated JSONL files
+├── scripts/
+│   ├── generate_top10_stats_jsonl.py   # CSV → JSONL (hockey example)
+│   ├── generate_player_summaries.py
+│   └── smoke_eval.py                 # CI: toy gold/pred → run_eval
 │
-├── models/                   # Trained model outputs (not in git)
-│   ├── minigpt/             # MiniGPT model files
-│   │   ├── player_summary_minigpt.keras
-│   │   └── player_summary_minigpt_vocab.json
-│   └── ...                  # Other model outputs
+├── utils/
+│   ├── fix_keras_compatibility.py
+│   └── test_compatibility.py
 │
+├── Data/                     # Data files (not in git; you provide CSV/JSONL)
+├── models/                   # Trained outputs (not in git; legacy name)
 ├── results/                  # Training checkpoints (not in git)
-│   └── checkpoint-*/        # Model checkpoints during training
-│
-├── player_summary_model/     # Trained advanced model (not in git)
-│   └── adapter_*.safetensors # LoRA adapter weights
+├── player_summary_model/     # Default Mistral LoRA export (not in git)
+├── outputs/                  # Local prediction/eval exports (not in git)
 │
 └── llm_env/                  # Virtual environment (not in git)
-    └── ...
 ```
 
-## Directory Descriptions
+## Directory descriptions
+
+### `/evaluation`
+
+Shared **scoring pipeline** for any model that emits the standard predictions JSONL (`id`, `generated`, optional timing / VRAM). See `docs/models-and-evaluation.md`.
+
+### `/docs`
+
+On GitHub, open these Markdown files in the browser for full setup, custom datasets, and how to plug in additional models later.
 
 ### `/llm_training`
-Contains the main training scripts for both models:
-- **player_summary_advanced.py**: Mistral-7B with QLoRA (recommended)
-- **player_summary_minigpt.py**: MiniGPT lightweight model (lower accuracy)
 
-### `/scripts`
-Data processing and preparation scripts:
-- **generate_top10_stats_jsonl.py**: Converts CSV files to training JSONL format
-- **generate_player_summaries.py**: Utility for generating summaries
-
-### `/utils`
-Utility and helper scripts:
-- **fix_keras_compatibility.py**: Fixes Keras 3/Transformers compatibility issues
-- **test_compatibility.py**: Tests library compatibility
+**player_summary_advanced.py**: Mistral-7B with QLoRA; supports `--export_predictions` and `--generate_all` for eval.
 
 ### Excluded from Git (via .gitignore)
-- `llm_env/` - Virtual environment
-- `Data/` - Data files (CSV, JSONL)
-- `models/` - All trained model outputs
-- `results/` - Training checkpoints
-- `player_summary_model/` - Trained advanced models
-- `*.keras`, `*.safetensors`, `*.vocab.json` - Model files
-- `__pycache__/` - Python cache
 
+- `llm_env/`, `Data/`, `models/`, `results/`, `player_summary_model/`, `outputs/`
+- Large model weights and `*.jsonl` / `*.csv` patterns as configured
+- See `.gitignore` for the full list

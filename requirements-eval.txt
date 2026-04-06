@@ -1,0 +1,4 @@
+# Optional: evaluation stack (install on top of requirements.txt)
+sacrebleu>=2.4.0
+rouge-score>=0.1.2
+bert-score>=0.3.13

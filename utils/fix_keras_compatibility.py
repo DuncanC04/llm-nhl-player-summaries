@@ -20,7 +20,7 @@ def main():
         print("\n✅ Successfully installed tf-keras!")
         print("\nYou may need to set TF_USE_LEGACY_KERAS=1 in your environment")
         print("or in your script before importing transformers.")
-        print("\nThe advanced model script automatically handles this.")
+        print("\n`player_summary_advanced.py` sets TF_USE_LEGACY_KERAS=1 before importing transformers.")
     except subprocess.CalledProcessError as e:
         print(f"\n❌ Error installing tf-keras: {e}")
         sys.exit(1)

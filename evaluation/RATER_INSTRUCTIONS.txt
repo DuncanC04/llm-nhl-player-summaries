@@ -1,0 +1,18 @@
+Human evaluation — player summary rubric (NLG / data-to-text style)
+
+Before you start
+- Read evaluation/human_rubric_template.csv column names.
+- Use the example_id copied from eval_report.json per_example[].id (or from prediction JSONL).
+- Rate blind to model name when comparing systems; randomize order if you compare multiple models.
+
+Scales (1–5 Likert)
+- faithfulness: Text is supported by the provided stats only (no wrong numbers, no contradictions, no clear inventions).
+- fluency: Grammar and readability; sounds like natural English.
+- informativeness: Useful, relevant highlights for a reader who cares about this player; selective summary is OK (not every stat required).
+- overall: Holistic quality for this task.
+
+Procedure
+- Pilot 10–20 examples with another rater; align on edge cases (e.g. rounding, team abbreviations).
+- Prefer 2+ independent raters on the same example_id for reliability; report means and agreement (e.g. correlation).
+
+See Dhingra et al. (2019) on PARENT vs BLEU/ROUGE when references diverge from the table; your faithfulness judgments help validate automatic scores.
