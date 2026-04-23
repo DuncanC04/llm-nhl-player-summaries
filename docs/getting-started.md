@@ -1,6 +1,6 @@
 # Getting started (GitHub clone)
 
-This walkthrough assumes an **NVIDIA GPU** for QLoRA training. The default preset is **Mistral-7B** (~8GB+ VRAM with 4-bit); **`--model_preset phi-3-mini`** is a smaller option on the same pipeline.
+This walkthrough assumes an **NVIDIA GPU** for QLoRA training. Four model presets are available (`gpt2`, `qwen3-1.7b`, `phi-3-mini`, `mistral`); **`mistral`** is the default and highest-scoring. **`gpt2`** runs on CPU for small datasets.
 
 ## 1. Clone and virtual environment
 
@@ -23,7 +23,7 @@ Install **CUDA-enabled PyTorch** if `python -c "import torch; print(torch.cuda.i
 
 ## 2. Prepare JSONL data
 
-You need one **JSONL** file: one JSON object per line. See [Custom dataset](custom-dataset.md) for the exact schema. For the **general table-to-text workflow** and how this repo wires prompts, training, and PARENT evaluation together, read [Table to text](table-to-text.md).
+You need one **JSONL** file: one JSON object per line. See [Custom dataset](custom-dataset.md) for the exact schema. For the **general table-to-text workflow** — and how to apply it to your own domain — read [Table to text](table-to-text.md).
 
 Example using the included CSV helper (place your CSVs under `Data/`):
 
@@ -38,56 +38,63 @@ Or bring your own `my_dataset.jsonl` and pass `--data_path`.
 
 ## 3. Train (QLoRA)
 
-Default preset is **Mistral-7B**. Training and inference code lives in **`llm_training/player_summary/`**; the script you run is still **`llm_training/player_summary_advanced.py`**.
+All four presets use the same entry script. Pick the one that fits your GPU budget:
 
 ```bash
+# Mistral-7B — best scores, ~5 GB VRAM in 4-bit (default)
 python llm_training/player_summary_advanced.py \
   --data_path Data/out/my_dataset.jsonl \
-  --output_dir ./player_summary_model \
-  --num_epochs 3
-```
+  --output_dir ./adapter_mistral
 
-**Phi-3-mini** (chat template for SFT and generation):
+# Qwen3-1.7B — good quality, ~2 GB VRAM
+python llm_training/player_summary_advanced.py \
+  --model_preset qwen3-1.7b \
+  --data_path Data/out/my_dataset.jsonl \
+  --output_dir ./adapter_qwen3
 
-```bash
+# Phi-3-mini — chat template, ~3 GB VRAM
 python llm_training/player_summary_advanced.py \
   --model_preset phi-3-mini \
   --data_path Data/out/my_dataset.jsonl \
-  --output_dir ./player_summary_phi3 \
-  --num_epochs 3
+  --output_dir ./adapter_phi3
+
+# GPT-2 — smallest, CPU-feasible, useful as baseline
+python llm_training/player_summary_advanced.py \
+  --model_preset gpt2 \
+  --data_path Data/out/my_dataset.jsonl \
+  --output_dir ./adapter_gpt2
 ```
 
-**Train/validation split:** Examples are **shuffled** before splitting (default seed `42`) so validation is not tied to JSONL row order. Use **`--no_shuffle`** to keep file order, or **`--shuffle_seed N`** to reproduce a different split.
+**Train/validation split:** Examples are shuffled before splitting (default seed `42`). Use `--no_shuffle` to keep file order, or `--shuffle_seed N` for a different split.
 
-**Important:** For **`--test_only`**, pass the same **`--model_preset`** (and usually the same **`--output_dir`**) as training so prompts and tokenizer behavior match the saved adapter.
+**Important:** For `--test_only`, pass the same `--model_preset` and `--output_dir` as training so prompts and tokenizer behavior match the saved adapter.
 
 ## 4. Evaluate (automatic + efficiency + human rubric)
 
-**A. Export predictions** (validation split, same `id`s as gold):
+**A. Export predictions** (validation split):
 
 ```bash
 python llm_training/player_summary_advanced.py \
   --test_only \
   --data_path Data/out/my_dataset.jsonl \
-  --output_dir ./player_summary_model \
+  --output_dir ./adapter_mistral \
   --num_test -1 \
   --export_predictions outputs/mistral_val_predictions.jsonl
+# Change --model_preset and --output_dir for other presets
 ```
 
-If you trained with **`--model_preset phi-3-mini`**, add **`--model_preset phi-3-mini`** and point **`--output_dir`** at that run’s adapter directory.
-
-For **all rows** (full corpus metrics, slower):
+For the **full corpus** (slower):
 
 ```bash
 python llm_training/player_summary_advanced.py \
   --test_only \
   --data_path Data/out/my_dataset.jsonl \
-  --output_dir ./player_summary_model \
+  --output_dir ./adapter_mistral \
   --generate_all
-# Then use generated_summaries.jsonl: each line has id + generated + timing (+ peak_gpu_mb on CUDA)
+# Writes generated_summaries.jsonl: id + generated + timing + peak_gpu_mb
 ```
 
-**B. Run metrics** (PARENT, BLEU, ROUGE, chrF++, numeric coverage; optional BERTScore):
+**B. Run metrics** (PARENT, BLEU, ROUGE, chrF++, numeric coverage):
 
 ```bash
 python -m evaluation.run_eval \
@@ -107,11 +114,16 @@ python -m evaluation.merge_human \
 
 More detail: [Models & evaluation](models-and-evaluation.md).
 
-## Compare two presets (Mistral vs Phi-3-mini)
+## Compare all presets
 
-With **CUDA PyTorch** and both requirement files installed, from the repo root:
+Run training, prediction export, and evaluation for all four models in one shot:
 
 - **Windows:** `.\scripts\run_compare_presets.ps1` (add `-Epochs 1` for a faster trial; `-SkipTrain` if adapters already exist in `outputs/compare_presets/`).
 - **Linux / macOS:** `bash scripts/run_compare_presets.sh` (`EPOCHS=1` or `SKIP_TRAIN=1` as needed).
 
-This trains each preset into separate adapter folders, writes `mistral_val_predictions.jsonl` and `phi3_mini_val_predictions.jsonl`, and produces `eval_report_mistral.json` and `eval_report_phi3_mini.json` under `outputs/compare_presets/`.
+Artifacts land in `outputs/compare_presets/`:
+- `eval_report_gpt2.json`, `eval_report_qwen3_17b.json`, `eval_report_phi3_mini.json`, `eval_report_mistral.json`
+- `gpt2_val_predictions.jsonl`, `qwen3_17b_val_predictions.jsonl`, `phi3_mini_val_predictions.jsonl`, `mistral_val_predictions.jsonl`
+- Adapter configs for each model under `adapter_<preset>/`
+
+Reference results (hockey dataset, 45 val examples) are already committed to `outputs/compare_presets/`. Use `scripts/print_results.py` to print a summary table.

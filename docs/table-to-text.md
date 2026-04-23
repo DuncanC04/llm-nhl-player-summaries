@@ -17,10 +17,10 @@ That pattern is the same whether your “table” is sports stats, a product cat
    Models read **tokens**, not SQL. Turn each record into a **stable prompt template**: fixed section headers, delimiter-separated stats, or a short bullet list. The only requirement is **consistency**: training, inference, and any metric that reads “the table” should use the **same** rendering rules.
 
 3. **Pair input with supervision**  
-   Each example is `(rendered_structure, reference_text)`. For a causal LM, common practice is **prompt + completion** in one string (SFT), or a **chat template** with a user message (table) and an assistant message (summary). This repo uses plain continuation for the **`mistral`** preset and a chat template for **`phi-3-mini`** (see `llm_training/player_summary/presets/`).
+   Each example is `(rendered_structure, reference_text)`. For a causal LM, common practice is **prompt + completion** in one string (SFT), or a **chat template** with a user message (table) and an assistant message (summary). This repo uses plain continuation for `gpt2`, `qwen3-1.7b`, and `mistral` presets, and a chat template for `phi-3-mini` (see `llm_training/player_summary/presets/`).
 
 4. **Split and train**  
-   Hold out a validation split. Rows are **shuffled** before splitting by default (configurable seed) so validation is not biased by JSONL order. Fine-tune with **QLoRA** (default base: **Mistral-7B**; optional **Phi-3-mini** preset).
+   Hold out a validation split. Rows are **shuffled** before splitting by default (configurable seed) so validation is not biased by JSONL order. Fine-tune with **QLoRA** using any of the four built-in presets: **`gpt2`** (124M, CPU-feasible), **`qwen3-1.7b`** (~2 GB VRAM), **`phi-3-mini`** (~3 GB VRAM), or **`mistral`** (~5 GB VRAM, best scores).
 
 5. **Align evaluation with the prompt**  
    If you use **structure-aware** scores (e.g. PARENT, which compares generated text to a set of `(attribute, value)` records), build those records with the **same** logic as the training prompt. If you change how stats appear in the prompt, update the code that builds the metric’s table or the scores will not measure what you think.
@@ -37,8 +37,8 @@ That pattern is the same whether your “table” is sports stats, a product cat
 |------|----------------|
 | Canonical format | JSONL lines with `name`, `team`, `position`, `topStats[]`, and `summary` (see [custom-dataset.md](custom-dataset.md)). |
 | Linearization | `format_stats_text` + `create_prompt` in `llm_training/player_summary/prompts.py`: each stat becomes `stat: value (percentile: pctl)` joined by `; `. |
-| Supervision | `data_pipeline.create_training_example` delegates to the active **preset**: plain `prompt + summary` for `mistral`, or `tokenizer.apply_chat_template` (user/assistant) for `phi-3-mini`. |
-| Training | `llm_training/player_summary/`: 4-bit load, LoRA targets resolved per preset, `SFTTrainer` / `SFTConfig`; CLI via `player_summary_advanced.py` (see [models-and-evaluation.md](models-and-evaluation.md)). |
+| Supervision | `data_pipeline.create_training_example` delegates to the active **preset**: plain `prompt + summary` for `gpt2`, `qwen3-1.7b`, and `mistral`; `tokenizer.apply_chat_template` (user/assistant) for `phi-3-mini`. |
+| Training | `llm_training/player_summary/`: 4-bit load, LoRA targets resolved per preset, `SFTTrainer` / `SFTConfig`; CLI via `player_summary_advanced.py`. Four presets: `gpt2`, `qwen3-1.7b`, `phi-3-mini`, `mistral` (see [models-and-evaluation.md](models-and-evaluation.md)). |
 | Data from raw tables | `scripts/generate_top10_stats_jsonl.py` maps hockey CSV rows into the JSONL schema; it is one **instance** of step 1–2 for this domain. |
 | Eval table + IDs | `evaluation/jsonl_table.py`: `records_from_example` builds PARENT’s `(attribute, value)` rows to match the stat string format above; `stable_example_id` hashes the structured fields used in the prompt. |
 | Metrics + human study | `python -m evaluation.run_eval` on gold JSONL + prediction JSONL; optional merge with `evaluation/merge_human` and the rubric templates. |
