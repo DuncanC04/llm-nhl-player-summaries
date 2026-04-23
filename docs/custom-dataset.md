@@ -39,7 +39,7 @@ Each element of `topStats`:
 
 ## Stable IDs (for evaluation)
 
-Predictions are joined to gold using `evaluation.jsonl_table.stable_example_id(row)`, a hash of `name`, `team`, `position`, and `topStats`. Any model you add must emit the **same** `id` for the same gold row. The Mistral script does this automatically when using `--export_predictions` or `--generate_all`.
+Predictions are joined to gold using `evaluation.jsonl_table.stable_example_id(row)`, a hash of `name`, `team`, `position`, and `topStats`. Any model you add must emit the **same** `id` for the same gold row. The training CLI (`llm_training/player_summary_advanced.py`, any `--model_preset`) does this automatically when using `--export_predictions` or `--generate_all`.
 
 ## Prompt alignment
 
@@ -51,8 +51,8 @@ The evaluation **table** for PARENT uses the same convention internally. If you 
 
 ## From your own CSV / database
 
-1. Map each row to one JSON object with the fields above.
+1. Map each row to one JSON object with the fields above (or see [table-to-text.md](table-to-text.md) for how to generalize the schema and still align training with evaluation).
 2. Write JSONL (no trailing comma between lines).
 3. Point `--data_path` at your file for train/test and `--gold` at the **same** file for `run_eval` (gold references + table come from each line).
 
-The script `scripts/generate_top10_stats_jsonl.py` is an example pipeline from hockey CSVs; use it as a template for other domains.
+`scripts/generate_top10_stats_jsonl.py` is the **hockey** ETL from CSV to this JSONL shape; other domains follow the same table-to-text steps in [table-to-text.md](table-to-text.md).

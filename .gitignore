@@ -56,8 +56,6 @@ models/
 # Data files (too large, users should provide their own)
 Data/
 *.csv
-*.jsonl
-*.json
 *.parquet
 
 # Logs
@@ -87,8 +85,10 @@ Thumbs.db
 # Papers (research papers shouldn't be in repo)
 Papers/
 
-# Local eval / prediction exports (keep repo clean)
-outputs/
+# Outputs: exclude large model binaries but track eval results, predictions, and adapter configs
+# (*.safetensors and *.pt rules above already cover the large model weight files)
+outputs/**/tokenizer.json
+player_summary_gpt2/
 
 # Temporary files
 *.tmp

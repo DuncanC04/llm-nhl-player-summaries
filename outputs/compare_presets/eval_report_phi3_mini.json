@@ -1,0 +1,758 @@
+{
+  "metrics_requested": [
+    "parent",
+    "bleu",
+    "chrf",
+    "rouge",
+    "numeric_coverage"
+  ],
+  "num_examples": 45,
+  "per_example": [
+    {
+      "id": "Joel Farabee|CGY|e7ce487073407827",
+      "numeric_coverage": 0.0,
+      "parent_f1": 1.8361950924757454e-05,
+      "parent_precision": 0.0001120964640332194,
+      "parent_recall": 1e-05,
+      "parent_recall_ref": 9.999999999999997e-06,
+      "parent_recall_table": 1e-05,
+      "parent_lambda": 0.8333333333333334,
+      "efficiency": {
+        "generation_time_s": 5.6492204666137695,
+        "num_output_tokens": 52.0,
+        "peak_gpu_mb": 2903.56494140625,
+        "tokens_per_sec": 9.204809815321228
+      }
+    },
+    {
+      "id": "Jesperi Kotkaniemi|CAR|fa14e3416edb5d59",
+      "numeric_coverage": 0.0,
+      "parent_f1": 1.8480415949750594e-05,
+      "parent_precision": 0.0001216149639548894,
+      "parent_recall": 1e-05,
+      "parent_recall_ref": 9.999999999999997e-06,
+      "parent_recall_table": 1e-05,
+      "parent_lambda": 0.8333333333333334,
+      "efficiency": {
+        "generation_time_s": 6.657810926437378,
+        "num_output_tokens": 50.0,
+        "peak_gpu_mb": 2960.61669921875,
+        "tokens_per_sec": 7.509975959433742
+      }
+    },
+    {
+      "id": "Alexander Holtz|VGK|bff58e94f5f2b102",
+      "numeric_coverage": 0.0,
+      "parent_f1": 0.07700084199895886,
+      "parent_precision": 0.10054626838425368,
+      "parent_recall": 0.062390535803534826,
+      "parent_recall_ref": 0.00017782794100389232,
+      "parent_recall_table": 0.29166666666666663,
+      "parent_lambda": 0.7916666666666667,
+      "efficiency": {
+        "generation_time_s": 5.21636438369751,
+        "num_output_tokens": 46.0,
+        "peak_gpu_mb": 2903.56494140625,
+        "tokens_per_sec": 8.818402361568513
+      }
+    },
+    {
+      "id": "Jamie Oleksiak|SEA|8bf734cfc3195ba4",
+      "numeric_coverage": 0.0,
+      "parent_f1": 1.832392653011153e-05,
+      "parent_precision": 0.00010932651139290932,
+      "parent_recall": 1e-05,
+      "parent_recall_ref": 9.999999999999997e-06,
+      "parent_recall_table": 1e-05,
+      "parent_lambda": 0.8666666666666667,
+      "efficiency": {
+        "generation_time_s": 5.682894468307495,
+        "num_output_tokens": 57.0,
+        "peak_gpu_mb": 2920.43994140625,
+        "tokens_per_sec": 10.030100034037055
+      }
+    },
+    {
+      "id": "Phillip Danault|LAK|274aa0c22ad2cc40",
+      "numeric_coverage": 0.0,
+      "parent_f1": 0.038379116971425556,
+      "parent_precision": 0.05157142709886006,
+      "parent_recall": 0.030561328264529165,
+      "parent_recall_ref": 9.999999999999997e-06,
+      "parent_recall_table": 0.08333333333333333,
+      "parent_lambda": 0.8888888888888888,
+      "efficiency": {
+        "generation_time_s": 6.785307168960571,
+        "num_output_tokens": 52.0,
+        "peak_gpu_mb": 2945.40869140625,
+        "tokens_per_sec": 7.6636176823172155
+      }
+    },
+    {
+      "id": "Tyson Foerster|PHI|f79fac56734ae18f",
+      "numeric_coverage": 0.0,
+      "parent_f1": 0.032537340996956834,
+      "parent_precision": 0.04361453072458877,
+      "parent_recall": 0.025947270388905347,
+      "parent_recall_ref": 9.999999999999997e-06,
+      "parent_recall_table": 0.125,
+      "parent_lambda": 0.8333333333333334,
+      "efficiency": {
+        "generation_time_s": 6.516153573989868,
+        "num_output_tokens": 61.0,
+        "peak_gpu_mb": 2902.76220703125,
+        "tokens_per_sec": 9.361350880907715
+      }
+    },
+    {
+      "id": "Joel Edmundson|LAK|202c77becbc7ac44",
+      "numeric_coverage": 0.0,
+      "parent_f1": 0.05695111864505673,
+      "parent_precision": 0.043015693013266555,
+      "parent_recall": 0.08424241098822755,
+      "parent_recall_ref": 0.001910885584408734,
+      "parent_recall_table": 0.26666666666666666,
+      "parent_lambda": 0.7666666666666667,
+      "efficiency": {
+        "generation_time_s": 16.209197998046875,
+        "num_output_tokens": 149.0,
+        "peak_gpu_mb": 2933.69677734375,
+        "tokens_per_sec": 9.192311675010307
+      }
+    },
+    {
+      "id": "Kurtis MacDermid|NJD|2cf0e6fc4e0f4693",
+      "numeric_coverage": 0.0,
+      "parent_f1": 0.10165834193820493,
+      "parent_precision": 0.08155403278511582,
+      "parent_recall": 0.13491757588618208,
+      "parent_recall_ref": 0.0028574404296987997,
+      "parent_recall_table": 0.29166666666666663,
+      "parent_lambda": 0.8333333333333334,
+      "efficiency": {
+        "generation_time_s": 6.45805811882019,
+        "num_output_tokens": 63.0,
+        "peak_gpu_mb": 2905.97802734375,
+        "tokens_per_sec": 9.755254418724455
+      }
+    },
+    {
+      "id": "Adam Henrique|EDM|979ccd797e554516",
+      "numeric_coverage": 0.0,
+      "parent_f1": 0.07842994171330936,
+      "parent_precision": 0.0744575238654659,
+      "parent_recall": 0.08285011666756678,
+      "parent_recall_ref": 0.00251486685936587,
+      "parent_recall_table": 0.16666666666666666,
+      "parent_lambda": 0.8333333333333334,
+      "efficiency": {
+        "generation_time_s": 7.898984909057617,
+        "num_output_tokens": 69.0,
+        "peak_gpu_mb": 2955.86376953125,
+        "tokens_per_sec": 8.735299635891062
+      }
+    },
+    {
+      "id": "Colton Parayko|STL|4b3a45ec789baf79",
+      "numeric_coverage": 0.0,
+      "parent_f1": 0.016900847617215067,
+      "parent_precision": 0.015949496127070927,
+      "parent_recall": 0.017972889990092937,
+      "parent_recall_ref": 0.00014953487812212202,
+      "parent_recall_table": 0.027777777777777776,
+      "parent_lambda": 0.9166666666666666,
+      "efficiency": {
+        "generation_time_s": 14.973507642745972,
+        "num_output_tokens": 150.0,
+        "peak_gpu_mb": 2944.81298828125,
+        "tokens_per_sec": 10.017692819802889
+      }
+    },
+    {
+      "id": "Juha Jaaska|CAR|2098945c1130517c",
+      "numeric_coverage": 0.0,
+      "parent_f1": 1.977561522401676e-05,
+      "parent_precision": 0.0008813260675712578,
+      "parent_recall": 1e-05,
+      "parent_recall_ref": 9.999999999999997e-06,
+      "parent_recall_table": 1e-05,
+      "parent_lambda": 0.9259259259259259,
+      "efficiency": {
+        "generation_time_s": 7.957768678665161,
+        "num_output_tokens": 63.0,
+        "peak_gpu_mb": 2997.22216796875,
+        "tokens_per_sec": 7.91679207375096
+      }
+    },
+    {
+      "id": "Erik Cernak|TBL|49d10d7353f28e57",
+      "numeric_coverage": 0.0,
+      "parent_f1": 1.8364786226815605e-05,
+      "parent_precision": 0.00011230816745783812,
+      "parent_recall": 1e-05,
+      "parent_recall_ref": 9.999999999999997e-06,
+      "parent_recall_table": 1e-05,
+      "parent_lambda": 0.7666666666666667,
+      "efficiency": {
+        "generation_time_s": 6.509336233139038,
+        "num_output_tokens": 61.0,
+        "peak_gpu_mb": 2917.22607421875,
+        "tokens_per_sec": 9.37115518621529
+      }
+    },
+    {
+      "id": "Tage Thompson|BUF|9d8a6ab458bfb711",
+      "numeric_coverage": 0.0,
+      "parent_f1": 0.055406033505399827,
+      "parent_precision": 0.07792021279973753,
+      "parent_recall": 0.042985772414356284,
+      "parent_recall_ref": 0.00012574334296829346,
+      "parent_recall_table": 0.0641025641025641,
+      "parent_lambda": 0.9358974358974359,
+      "efficiency": {
+        "generation_time_s": 6.595474720001221,
+        "num_output_tokens": 62.0,
+        "peak_gpu_mb": 3066.86474609375,
+        "tokens_per_sec": 9.400384753500886
+      }
+    },
+    {
+      "id": "Alex Ovechkin|WSH|95dd83cf18a000a1",
+      "numeric_coverage": 0.0,
+      "parent_f1": 0.015739686902441347,
+      "parent_precision": 0.05144201220913519,
+      "parent_recall": 0.00929126537517462,
+      "parent_recall_ref": 9.999999999999997e-06,
+      "parent_recall_table": 0.013888888888888888,
+      "parent_lambda": 0.9444444444444444,
+      "efficiency": {
+        "generation_time_s": 7.5555360317230225,
+        "num_output_tokens": 65.0,
+        "peak_gpu_mb": 3057.83642578125,
+        "tokens_per_sec": 8.602963406843406
+      }
+    },
+    {
+      "id": "Vladislav Gavrikov|LAK|5d12daacf9ce9dde",
+      "numeric_coverage": 0.0,
+      "parent_f1": 1.8302469372586766e-05,
+      "parent_precision": 0.00010781819825234488,
+      "parent_recall": 1e-05,
+      "parent_recall_ref": 9.999999999999997e-06,
+      "parent_recall_table": 1e-05,
+      "parent_lambda": 0.8888888888888888,
+      "efficiency": {
+        "generation_time_s": 5.712341785430908,
+        "num_output_tokens": 57.0,
+        "peak_gpu_mb": 2945.50830078125,
+        "tokens_per_sec": 9.97839452558251
+      }
+    },
+    {
+      "id": "Alex Laferriere|LAK|ca8561cbf6a8df1a",
+      "numeric_coverage": 0.0,
+      "parent_f1": 0.09484690968203498,
+      "parent_precision": 0.1405948408785252,
+      "parent_recall": 0.07156159600973057,
+      "parent_recall_ref": 0.0028574404296987997,
+      "parent_recall_table": 0.09259259259259259,
+      "parent_lambda": 0.9259259259259259,
+      "efficiency": {
+        "generation_time_s": 8.065397500991821,
+        "num_output_tokens": 67.0,
+        "peak_gpu_mb": 2997.19677734375,
+        "tokens_per_sec": 8.307092116880892
+      }
+    },
+    {
+      "id": "Tanner Pearson|VGK|378333f6d9e57878",
+      "numeric_coverage": 0.0,
+      "parent_f1": 1.8132557673460286e-05,
+      "parent_precision": 9.709835434146468e-05,
+      "parent_recall": 1e-05,
+      "parent_recall_ref": 9.999999999999997e-06,
+      "parent_recall_table": 1e-05,
+      "parent_lambda": 0.8666666666666667,
+      "efficiency": {
+        "generation_time_s": 7.121973276138306,
+        "num_output_tokens": 61.0,
+        "peak_gpu_mb": 2932.56103515625,
+        "tokens_per_sec": 8.56504196728404
+      }
+    },
+    {
+      "id": "Morgan Frost|CGY|22ea1ac2545afb92",
+      "numeric_coverage": 0.0,
+      "parent_f1": 0.14880234981295587,
+      "parent_precision": 0.11295714543953919,
+      "parent_recall": 0.21797257904783315,
+      "parent_recall_ref": 0.05081327481546148,
+      "parent_recall_table": 0.29166666666666663,
+      "parent_lambda": 0.8333333333333334,
+      "efficiency": {
+        "generation_time_s": 4.274726152420044,
+        "num_output_tokens": 41.0,
+        "peak_gpu_mb": 2901.15478515625,
+        "tokens_per_sec": 9.591257670807458
+      }
+    },
+    {
+      "id": "Jack Roslovic|CAR|e92fba89c6b07e7c",
+      "numeric_coverage": 0.0,
+      "parent_f1": 0.02012681335111101,
+      "parent_precision": 0.0153192471170326,
+      "parent_recall": 0.029331905224030022,
+      "parent_recall_ref": 9.999999999999997e-06,
+      "parent_recall_table": 0.05555555555555555,
+      "parent_lambda": 0.9259259259259259,
+      "efficiency": {
+        "generation_time_s": 15.823366641998291,
+        "num_output_tokens": 150.0,
+        "peak_gpu_mb": 2997.15087890625,
+        "tokens_per_sec": 9.479651416397749
+      }
+    },
+    {
+      "id": "Mikko Rantanen|DAL|ba6cd8940c9c06f0",
+      "numeric_coverage": 0.0,
+      "parent_f1": 0.024833109702717113,
+      "parent_precision": 0.058520616494745624,
+      "parent_recall": 0.015760529956400288,
+      "parent_recall_ref": 9.999999999999997e-06,
+      "parent_recall_table": 0.026666666666666665,
+      "parent_lambda": 0.9333333333333333,
+      "efficiency": {
+        "generation_time_s": 8.132707595825195,
+        "num_output_tokens": 77.0,
+        "peak_gpu_mb": 3302.19384765625,
+        "tokens_per_sec": 9.467941530263158
+      }
+    },
+    {
+      "id": "Matthew Tkachuk|FLA|6b4c6936a09c856d",
+      "numeric_coverage": 0.0,
+      "parent_f1": 0.014279893385330948,
+      "parent_precision": 0.023998490902216514,
+      "parent_recall": 0.010163863713046336,
+      "parent_recall_ref": 9.999999999999997e-06,
+      "parent_recall_table": 0.016666666666666666,
+      "parent_lambda": 0.9333333333333333,
+      "efficiency": {
+        "generation_time_s": 16.18188500404358,
+        "num_output_tokens": 150.0,
+        "peak_gpu_mb": 3009.06005859375,
+        "tokens_per_sec": 9.269624642772925
+      }
+    },
+    {
+      "id": "Mason Marchment|DAL|9d90b82c4333c609",
+      "numeric_coverage": 0.0,
+      "parent_f1": 0.03136377331393678,
+      "parent_precision": 0.03963827986581736,
+      "parent_recall": 0.025947270388905347,
+      "parent_recall_ref": 9.999999999999997e-06,
+      "parent_recall_table": 0.125,
+      "parent_lambda": 0.8333333333333334,
+      "efficiency": {
+        "generation_time_s": 6.175104856491089,
+        "num_output_tokens": 51.0,
+        "peak_gpu_mb": 2897.94091796875,
+        "tokens_per_sec": 8.258969067770614
+      }
+    },
+    {
+      "id": "Nikita Zadorov|BOS|ea99fce67a615a45",
+      "numeric_coverage": 0.0,
+      "parent_f1": 0.015984650260201017,
+      "parent_precision": 0.020125133058695763,
+      "parent_recall": 0.01325716253304717,
+      "parent_recall_ref": 0.00013512001548070333,
+      "parent_recall_table": 0.027777777777777776,
+      "parent_lambda": 0.8611111111111112,
+      "efficiency": {
+        "generation_time_s": 14.94986343383789,
+        "num_output_tokens": 150.0,
+        "peak_gpu_mb": 2938.42919921875,
+        "tokens_per_sec": 10.033536471007908
+      }
+    },
+    {
+      "id": "William Carrier|CAR|d321cfd86db945c5",
+      "numeric_coverage": 0.0,
+      "parent_f1": 0.03301927257877915,
+      "parent_precision": 0.04761298946116124,
+      "parent_recall": 0.025272938718637065,
+      "parent_recall_ref": 0.00012574334296829346,
+      "parent_recall_table": 0.0625,
+      "parent_lambda": 0.8541666666666667,
+      "efficiency": {
+        "generation_time_s": 6.839578151702881,
+        "num_output_tokens": 57.0,
+        "peak_gpu_mb": 2974.65087890625,
+        "tokens_per_sec": 8.333847312762769
+      }
+    },
+    {
+      "id": "Jack McBain|UTA|31f256d89161d951",
+      "numeric_coverage": 0.0,
+      "parent_f1": 1.8541087174523172e-05,
+      "parent_precision": 0.000127088382874852,
+      "parent_recall": 1e-05,
+      "parent_recall_ref": 9.999999999999997e-06,
+      "parent_recall_table": 1e-05,
+      "parent_lambda": 0.8611111111111112,
+      "efficiency": {
+        "generation_time_s": 5.5912415981292725,
+        "num_output_tokens": 53.0,
+        "peak_gpu_mb": 2938.99853515625,
+        "tokens_per_sec": 9.479111047130003
+      }
+    },
+    {
+      "id": "Nick Suzuki|MTL|439a0a61c570b263",
+      "numeric_coverage": 0.0,
+      "parent_f1": 0.03647303115336723,
+      "parent_precision": 0.07408590762781679,
+      "parent_recall": 0.02419128944555828,
+      "parent_recall_ref": 9.999999999999997e-06,
+      "parent_recall_table": 0.03571428571428571,
+      "parent_lambda": 0.9523809523809523,
+      "efficiency": {
+        "generation_time_s": 4.74965238571167,
+        "num_output_tokens": 47.0,
+        "peak_gpu_mb": 3093.08544921875,
+        "tokens_per_sec": 9.89546101129203
+      }
+    },
+    {
+      "id": "Luke Schenn|WPG|3c8302fe86c74f03",
+      "numeric_coverage": 0.0,
+      "parent_f1": 1.79887919215192e-05,
+      "parent_precision": 8.944271909999155e-05,
+      "parent_recall": 1e-05,
+      "parent_recall_ref": 9.999999999999997e-06,
+      "parent_recall_table": 1e-05,
+      "parent_lambda": 0.8333333333333334,
+      "efficiency": {
+        "generation_time_s": 15.949287176132202,
+        "num_output_tokens": 150.0,
+        "peak_gpu_mb": 2901.95849609375,
+        "tokens_per_sec": 9.404809026479382
+      }
+    },
+    {
+      "id": "Zach Werenski|CBJ|38eb41d92316cf5f",
+      "numeric_coverage": 0.0,
+      "parent_f1": 1.9967022020686443e-05,
+      "parent_precision": 0.006054652964281436,
+      "parent_recall": 1e-05,
+      "parent_recall_ref": 9.999999999999997e-06,
+      "parent_recall_table": 1e-05,
+      "parent_lambda": 0.9305555555555556,
+      "efficiency": {
+        "generation_time_s": 7.7755560874938965,
+        "num_output_tokens": 72.0,
+        "peak_gpu_mb": 3060.30908203125,
+        "tokens_per_sec": 9.259787877526067
+      }
+    },
+    {
+      "id": "Scott Laughton|TOR|0f7d1a9ee9f8c264",
+      "numeric_coverage": 0.0,
+      "parent_f1": 0.05628841580401994,
+      "parent_precision": 0.06881570893204275,
+      "parent_recall": 0.04761967397459624,
+      "parent_recall_ref": 0.002272438732934998,
+      "parent_recall_table": 0.16666666666666666,
+      "parent_lambda": 0.7083333333333334,
+      "efficiency": {
+        "generation_time_s": 7.732420444488525,
+        "num_output_tokens": 70.0,
+        "peak_gpu_mb": 2901.95849609375,
+        "tokens_per_sec": 9.052792783648261
+      }
+    },
+    {
+      "id": "Nathan MacKinnon|COL|faf841cdd2788de8",
+      "numeric_coverage": 0.0,
+      "parent_f1": 0.03623567676922825,
+      "parent_precision": 0.053214002284706616,
+      "parent_recall": 0.027470885306364226,
+      "parent_recall_ref": 0.002272438732934998,
+      "parent_recall_table": 0.0303030303030303,
+      "parent_lambda": 0.9621212121212122,
+      "efficiency": {
+        "generation_time_s": 5.29835319519043,
+        "num_output_tokens": 45.0,
+        "peak_gpu_mb": 3262.54248046875,
+        "tokens_per_sec": 8.493205028469726
+      }
+    },
+    {
+      "id": "Jamie Benn|DAL|611dd86ad470fac6",
+      "numeric_coverage": 0.0,
+      "parent_f1": 1.9810159967696728e-05,
+      "parent_precision": 0.0010435185733665409,
+      "parent_recall": 1e-05,
+      "parent_recall_ref": 9.999999999999997e-06,
+      "parent_recall_table": 1e-05,
+      "parent_lambda": 0.8333333333333334,
+      "efficiency": {
+        "generation_time_s": 3.3915414810180664,
+        "num_output_tokens": 33.0,
+        "peak_gpu_mb": 2898.74462890625,
+        "tokens_per_sec": 9.730088865106294
+      }
+    },
+    {
+      "id": "Evgenii Dadonov|DAL|0226581857b13c72",
+      "numeric_coverage": 0.0,
+      "parent_f1": 0.017407946587263325,
+      "parent_precision": 0.01309751535682667,
+      "parent_recall": 0.025947270388905347,
+      "parent_recall_ref": 9.999999999999997e-06,
+      "parent_recall_table": 0.125,
+      "parent_lambda": 0.8333333333333334,
+      "efficiency": {
+        "generation_time_s": 16.348798990249634,
+        "num_output_tokens": 150.0,
+        "peak_gpu_mb": 2905.17431640625,
+        "tokens_per_sec": 9.174985886697822
+      }
+    },
+    {
+      "id": "Brad Marchand|FLA|6532778e5f9dac6a",
+      "numeric_coverage": 0.0,
+      "parent_f1": 1.99540596798437e-05,
+      "parent_precision": 0.004343474231775924,
+      "parent_recall": 1e-05,
+      "parent_recall_ref": 9.999999999999997e-06,
+      "parent_recall_table": 1e-05,
+      "parent_lambda": 0.9083333333333333,
+      "efficiency": {
+        "generation_time_s": 16.23232889175415,
+        "num_output_tokens": 150.0,
+        "peak_gpu_mb": 3012.28662109375,
+        "tokens_per_sec": 9.240818184518082
+      }
+    },
+    {
+      "id": "Connor Clifton|BUF|8d9485d0de7aabf4",
+      "numeric_coverage": 0.0,
+      "parent_f1": 0.02422697189677284,
+      "parent_precision": 0.022720600903276586,
+      "parent_recall": 0.025947270388905347,
+      "parent_recall_ref": 9.999999999999997e-06,
+      "parent_recall_table": 0.125,
+      "parent_lambda": 0.8333333333333334,
+      "efficiency": {
+        "generation_time_s": 15.715262651443481,
+        "num_output_tokens": 150.0,
+        "peak_gpu_mb": 2903.56494140625,
+        "tokens_per_sec": 9.544861153575576
+      }
+    },
+    {
+      "id": "Zach Hyman|EDM|e14522411a26e1b2",
+      "numeric_coverage": 0.0,
+      "parent_f1": 0.03443593249914177,
+      "parent_precision": 0.030386100370476867,
+      "parent_recall": 0.0397312820351915,
+      "parent_recall_ref": 0.002272438732934998,
+      "parent_recall_table": 0.047619047619047616,
+      "parent_lambda": 0.9404761904761905,
+      "efficiency": {
+        "generation_time_s": 9.656672716140747,
+        "num_output_tokens": 96.0,
+        "peak_gpu_mb": 3105.79638671875,
+        "tokens_per_sec": 9.941312377661903
+      }
+    },
+    {
+      "id": "Alex Vlasic|CHI|ec0e3d03eb7e8ec1",
+      "numeric_coverage": 0.0,
+      "parent_f1": 1.9784561773495153e-05,
+      "parent_precision": 0.0009183403565128198,
+      "parent_recall": 1e-05,
+      "parent_recall_ref": 9.999999999999997e-06,
+      "parent_recall_table": 1e-05,
+      "parent_lambda": 0.8333333333333333,
+      "efficiency": {
+        "generation_time_s": 6.5371339321136475,
+        "num_output_tokens": 51.0,
+        "peak_gpu_mb": 2972.62255859375,
+        "tokens_per_sec": 7.801584077918716
+      }
+    },
+    {
+      "id": "Mathew Barzal|NYI|a6393450c64985a2",
+      "numeric_coverage": 0.0,
+      "parent_f1": 1.9658561813928757e-05,
+      "parent_precision": 0.0005757575636202256,
+      "parent_recall": 1e-05,
+      "parent_recall_ref": 9.999999999999997e-06,
+      "parent_recall_table": 1e-05,
+      "parent_lambda": 0.8888888888888888,
+      "efficiency": {
+        "generation_time_s": 15.223342418670654,
+        "num_output_tokens": 149.0,
+        "peak_gpu_mb": 2945.26123046875,
+        "tokens_per_sec": 9.787600902759639
+      }
+    },
+    {
+      "id": "Jason Robertson|DAL|345c42a03106824a",
+      "numeric_coverage": 0.0,
+      "parent_f1": 0.05778092369136909,
+      "parent_precision": 0.05070289223389637,
+      "parent_recall": 0.06715574319223418,
+      "parent_recall_ref": 0.0028574404296987997,
+      "parent_recall_table": 0.07777777777777777,
+      "parent_lambda": 0.9555555555555556,
+      "efficiency": {
+        "generation_time_s": 15.96561574935913,
+        "num_output_tokens": 150.0,
+        "peak_gpu_mb": 3109.76025390625,
+        "tokens_per_sec": 9.395190411370203
+      }
+    },
+    {
+      "id": "Michael McCarron|NSH|8465f5425386c5c9",
+      "numeric_coverage": 0.0,
+      "parent_f1": 0.040763779763788074,
+      "parent_precision": 0.032329037281498114,
+      "parent_recall": 0.055153490270068835,
+      "parent_recall_ref": 0.002272438732934998,
+      "parent_recall_table": 0.08333333333333333,
+      "parent_lambda": 0.8854166666666666,
+      "efficiency": {
+        "generation_time_s": 8.632197141647339,
+        "num_output_tokens": 77.0,
+        "peak_gpu_mb": 2972.62255859375,
+        "tokens_per_sec": 8.920092849652596
+      }
+    },
+    {
+      "id": "Tyson Jost|CAR|3ded61acdda5ab95",
+      "numeric_coverage": 0.0,
+      "parent_f1": 0.01869747609852024,
+      "parent_precision": 0.01474684145820992,
+      "parent_recall": 0.02553940660310455,
+      "parent_recall_ref": 0.00013512001548070333,
+      "parent_recall_table": 0.0625,
+      "parent_lambda": 0.8541666666666667,
+      "efficiency": {
+        "generation_time_s": 15.242100238800049,
+        "num_output_tokens": 150.0,
+        "peak_gpu_mb": 2977.39599609375,
+        "tokens_per_sec": 9.84116346500349
+      }
+    },
+    {
+      "id": "Devon Toews|COL|b3cae6f9363cca78",
+      "numeric_coverage": 0.0,
+      "parent_f1": 1.979180505723358e-05,
+      "parent_precision": 0.0009506381276243689,
+      "parent_recall": 1e-05,
+      "parent_recall_ref": 9.999999999999997e-06,
+      "parent_recall_table": 1e-05,
+      "parent_lambda": 0.9444444444444444,
+      "efficiency": {
+        "generation_time_s": 8.615559339523315,
+        "num_output_tokens": 77.0,
+        "peak_gpu_mb": 3050.76416015625,
+        "tokens_per_sec": 8.937318746882461
+      }
+    },
+    {
+      "id": "Jesper Bratt|NJD|4427f6ef71924c6c",
+      "numeric_coverage": 0.0,
+      "parent_f1": 0.021556597766442274,
+      "parent_precision": 0.02380649473058062,
+      "parent_recall": 0.01969524549479601,
+      "parent_recall_ref": 0.00014953487812212202,
+      "parent_recall_table": 0.02564102564102564,
+      "parent_lambda": 0.9487179487179487,
+      "efficiency": {
+        "generation_time_s": 6.297899484634399,
+        "num_output_tokens": 64.0,
+        "peak_gpu_mb": 3090.11083984375,
+        "tokens_per_sec": 10.162118362820342
+      }
+    },
+    {
+      "id": "Erik Gudbranson|CBJ|d96075ba9ec8dc07",
+      "numeric_coverage": 0.0,
+      "parent_f1": 0.05561491130920535,
+      "parent_precision": 0.06683663338188232,
+      "parent_recall": 0.04761967397459624,
+      "parent_recall_ref": 0.002272438732934998,
+      "parent_recall_table": 0.16666666666666666,
+      "parent_lambda": 0.7083333333333334,
+      "efficiency": {
+        "generation_time_s": 4.891331434249878,
+        "num_output_tokens": 39.0,
+        "peak_gpu_mb": 2905.17431640625,
+        "tokens_per_sec": 7.9732891798980985
+      }
+    },
+    {
+      "id": "Ryan Pulock|NYI|f37d2112e117db5e",
+      "numeric_coverage": 0.0,
+      "parent_f1": 1.8392605580490748e-05,
+      "parent_precision": 0.00011442496849097017,
+      "parent_recall": 1e-05,
+      "parent_recall_ref": 9.999999999999997e-06,
+      "parent_recall_table": 1e-05,
+      "parent_lambda": 0.7083333333333334,
+      "efficiency": {
+        "generation_time_s": 5.341315507888794,
+        "num_output_tokens": 51.0,
+        "peak_gpu_mb": 2901.15478515625,
+        "tokens_per_sec": 9.548209598305164
+      }
+    },
+    {
+      "id": "Jaden Schwartz|SEA|4fcf04fb5382039c",
+      "numeric_coverage": 0.0,
+      "parent_f1": 0.019420148575557728,
+      "parent_precision": 0.014206586137818344,
+      "parent_recall": 0.030678670795170792,
+      "parent_recall_ref": 9.999999999999997e-06,
+      "parent_recall_table": 0.07142857142857142,
+      "parent_lambda": 0.9047619047619048,
+      "efficiency": {
+        "generation_time_s": 15.700235843658447,
+        "num_output_tokens": 150.0,
+        "peak_gpu_mb": 2972.60400390625,
+        "tokens_per_sec": 9.55399660831128
+      }
+    }
+  ],
+  "automatic": {
+    "bleu": 0.5545831627843993,
+    "chrf_pp": 26.000714308421113,
+    "rouge1": 0.23556839049641629,
+    "rouge2": 0.034450786524146286,
+    "rougeL": 0.13124681344068773,
+    "numeric_coverage_mean": 0.0,
+    "parent_f1_mean": 0.028343677437057832
+  },
+  "efficiency": {
+    "generation_time_s": {
+      "mean": 9.218453476164076,
+      "stdev": 4.366776079210557,
+      "min": 3.3915414810180664,
+      "max": 16.348798990249634
+    },
+    "tokens_per_sec": {
+      "mean": 9.155628108219597,
+      "stdev": 0.6966411359554989
+    },
+    "peak_gpu_mb": {
+      "mean": 2979.8576714409724,
+      "max": 3302.19384765625,
+      "stdev": 91.50854198882588
+    }
+  }
+}

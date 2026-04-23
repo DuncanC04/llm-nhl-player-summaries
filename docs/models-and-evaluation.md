@@ -1,10 +1,19 @@
 # Models and evaluation
 
-## Current training entry point
+## Training entry point and code layout
 
-| Model | Script | Hardware | Notes |
-|-------|--------|----------|--------|
-| **Mistral-7B + QLoRA** | `llm_training/player_summary_advanced.py` | NVIDIA GPU, 8GB+ VRAM | `--export_predictions` / `--generate_all` for eval JSONL + `peak_gpu_mb` on CUDA |
+| Preset | Default base model | CLI |
+|--------|-------------------|-----|
+| **`mistral`** (default) | `mistralai/Mistral-7B-v0.1` | `python llm_training/player_summary_advanced.py` |
+| **`phi-3-mini`** | `microsoft/Phi-3-mini-4k-instruct` | same script + `--model_preset phi-3-mini` |
+
+- **Entry script:** `llm_training/player_summary_advanced.py` (delegates to `llm_training/player_summary/cli.py`).
+- **Package:** `llm_training/player_summary/` — data loading and shuffle, prompts, model/LoRA setup, `SFTTrainer`, inference, and validation / full export.
+- **Presets:** `llm_training/player_summary/presets/` — one module per family (e.g. `mistral.py`, `phi3_mini.py`) plus `registry.py` and shared `lora.py` (`resolve_lora_targets`).
+
+**Hardware:** NVIDIA GPU with CUDA; Mistral-7B in 4-bit typically wants **8GB+ VRAM** (12GB+ comfortable). Phi-3-mini is smaller; still use the same eval export flags.
+
+**Shuffle:** JSONL rows are shuffled before the train/validation split by default (`--shuffle_seed 42`). Use `--no_shuffle` or change `--shuffle_seed` as needed. **`stable_example_id`** in gold data is content-based, so metric alignment does not depend on row order.
 
 Training data: JSONL schema in [Custom dataset](custom-dataset.md).
 
@@ -49,10 +58,16 @@ Optional for efficiency reporting:
 
 4. Run `evaluation.run_eval --gold your.jsonl --pred your_preds.jsonl --out report.json`.
 
-## Adding a small language model later
+## Adding another base model (new preset)
 
-1. Add a script under `llm_training/` (or a subpackage) that loads your weights, reads JSONL, and formats prompts consistently with Mistral training (or documents a new prompt format and updates `jsonl_table` if the table changes).
-2. Reuse **evaluation** unchanged: same `--gold` JSONL, same prediction JSONL contract.
-3. Register the script in the main README and optionally add a row to the table at the top of this file.
+1. Add a preset class under `llm_training/player_summary/presets/` (see `mistral.py` / `phi3_mini.py` for examples). It should define:
+   - `id` (CLI string), `default_model_id`, `lora_target_candidates`
+   - `build_training_text(example, prompt, tokenizer)` — full SFT line (plain continuation or chat-formatted string)
+   - `build_generation_inputs(tokenizer, prompt)` — tensor dict + prompt length for `model.generate`
+   - `extra_generation_stop_markers()` — optional strings to trim from decoded output (e.g. chat turn markers)
+2. Register the class in `presets/registry.py` (`_PRESETS`). `PRESET_IDS` and argparse `--model_preset` update automatically.
+3. Reuse **evaluation** unchanged: same `--gold` JSONL, same prediction JSONL contract from `--export_predictions` / `--generate_all`.
+
+If you change how **table fields** appear in the prompt, update **`evaluation/jsonl_table.py`** (`records_from_example`, and `stable_example_id` if identity rules change) so PARENT and IDs stay aligned with what the model sees.
 
 Keeping **one JSONL schema** and **one prediction format** lets you run the same PARENT / BLEU / human pipeline for every model generation.

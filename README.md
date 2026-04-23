@@ -1,14 +1,25 @@
 # Player Summary Generator
 
-Fine-tune **Mistral-7B** with QLoRA to generate player summaries from statistics (GPU required).
+Fine-tune a **base language model** with QLoRA to generate player summaries from statistics (NVIDIA GPU required). The training code is modular under **`llm_training/player_summary/`**; **[`player_summary_advanced.py`](llm_training/player_summary_advanced.py)** is the CLI entry point.
 
-**Cloned from GitHub?** Use the step-by-step guide in **[docs/getting-started.md](docs/getting-started.md)** (environment, your own JSONL data, training, and full evaluation). More detail: **[docs/custom-dataset.md](docs/custom-dataset.md)** (schema), **[docs/models-and-evaluation.md](docs/models-and-evaluation.md)** (metrics + adding future models).
+**Cloned from GitHub?** Use **[docs/getting-started.md](docs/getting-started.md)** (environment, JSONL data, training, evaluation). For the **table-to-text** pattern, see **[docs/table-to-text.md](docs/table-to-text.md)**. Schema: **[docs/custom-dataset.md](docs/custom-dataset.md)**. Presets, metrics, and extending models: **[docs/models-and-evaluation.md](docs/models-and-evaluation.md)**.
 
 Continuous integration runs a **no-GPU smoke test** of the evaluation stack (see [.github/workflows/ci.yml](.github/workflows/ci.yml)).
 
-## Recommended: Mistral-7B (Advanced)
+## Model presets (`--model_preset`)
 
-The advanced model uses Mistral-7B with QLoRA fine-tuning to generate high-quality player summaries. **This is the recommended option** for best results.
+| Preset | Default Hugging Face model | Notes |
+|--------|----------------------------|--------|
+| `mistral` (default) | `mistralai/Mistral-7B-v0.1` | Recommended for best quality; ~8GB+ VRAM with 4-bit |
+| `phi-3-mini` | `microsoft/Phi-3-mini-4k-instruct` | Smaller SLM; chat template for train and inference |
+
+Override the checkpoint with **`--model_name`** (any compatible causal LM id). LoRA target layers are chosen automatically from each preset’s candidate list.
+
+**Shuffle before train/val split:** By default, JSONL rows are shuffled with **`--shuffle_seed 42`** so the validation slice is not order-biased. Use **`--no_shuffle`** to keep file order. Use **`--shuffle_seed N`** for a different split.
+
+## Recommended: Mistral-7B
+
+**Mistral-7B** with QLoRA remains the default preset for the strongest summaries. Use **`--model_preset phi-3-mini`** to experiment with a smaller model on the same JSONL and evaluation pipeline.
 
 ### Quick Start
 
@@ -42,16 +53,22 @@ Or use an existing JSONL file with the structure shown in the Data Format sectio
 
 ```bash
 python llm_training/player_summary_advanced.py
+
+# Phi-3-mini (same flags; use the same --model_preset for --test_only later)
+python llm_training/player_summary_advanced.py --model_preset phi-3-mini --output_dir ./player_summary_phi3
 ```
 
 #### 4. Test Model
 
 ```bash
-# Test on 3 examples (default)
+# Test on 3 examples (default); match the preset used at training time
 python llm_training/player_summary_advanced.py --test_only
 
 # Test on more examples
 python llm_training/player_summary_advanced.py --test_only --num_test 10
+
+# After training Phi-3 into ./player_summary_phi3
+python llm_training/player_summary_advanced.py --test_only --model_preset phi-3-mini --output_dir ./player_summary_phi3
 
 # Export validation predictions for evaluation (PARENT, BLEU, ROUGE, …)
 python llm_training/player_summary_advanced.py --test_only --num_test -1 \
@@ -68,6 +85,13 @@ python -m evaluation.run_eval --gold Data/out/aiTop10Stats_complete.jsonl \
   --pred outputs/mistral_val_predictions.jsonl --out outputs/eval_report.json
 ```
 
+**Compare Mistral vs Phi-3-mini** (train both, export validation preds, run `run_eval` twice) after CUDA PyTorch is installed:
+
+- **Windows:** `.\scripts\run_compare_presets.ps1` (optional: `-Epochs 1` for a quick run, `-SkipTrain` to re-evaluate existing adapters under `outputs/compare_presets/`).
+- **Linux/macOS:** `bash scripts/run_compare_presets.sh` (set `EPOCHS=1` or `SKIP_TRAIN=1` as needed).
+
+Artifacts: `outputs/compare_presets/eval_report_mistral.json` and `eval_report_phi3_mini.json`.
+
 ## Configuration
 
 ### Advanced Model Options
@@ -81,6 +105,10 @@ python llm_training/player_summary_advanced.py \
 ```
 
 **Common Arguments:**
+- `--model_preset`: `mistral` or `phi-3-mini` (default: `mistral`)
+- `--model_name`: Hugging Face model id (default: chosen from `--model_preset`)
+- `--shuffle_seed`: RNG seed for shuffling JSONL before train/val split (default: `42`; ignored if `--no_shuffle`)
+- `--no_shuffle`: Do not shuffle; first rows go to train, last rows to validation in file order
 - `--num_epochs`: Number of training epochs (default: 3)
 - `--batch_size`: Training batch size (default: 4)
 - `--learning_rate`: Learning rate (default: 2e-4)
@@ -89,6 +117,8 @@ python llm_training/player_summary_advanced.py \
 - `--num_test`: Number of test examples (default: 3, use -1 for all)
 - `--generate_all`: Generate summaries for all players
 - `--export_predictions`: Path to JSONL written after validation testing (for `evaluation.run_eval`)
+
+**Code layout:** Implementation lives in **`llm_training/player_summary/`** (`cli.py`, `data_pipeline.py`, `prompts.py`, `model_setup.py`, `training_loop.py`, `inference.py`, `evaluation_run.py`, `presets/`). To add another base model, add a preset class and register it in `presets/registry.py` (see [docs/models-and-evaluation.md](docs/models-and-evaluation.md)).
 
 ## Requirements
 
@@ -128,15 +158,13 @@ If the Transformers stack reports Keras-related import errors, try:
 python utils/fix_keras_compatibility.py
 ```
 
-## Mistral-7B at a glance
+## Hardware at a glance
 
-| Feature | Value |
-|---------|--------|
-| Base model | Mistral-7B |
-| Fine-tuning | QLoRA (LoRA adapters) |
-| GPU | NVIDIA, 8GB+ VRAM (12GB+ recommended) |
-| Typical training time | ~30–60 minutes |
-| Adapter size on disk | ~100MB (order of magnitude) |
+| | Mistral (default) | Phi-3-mini |
+|--|-------------------|------------|
+| Fine-tuning | QLoRA | QLoRA |
+| GPU (typical) | NVIDIA, 8GB+ VRAM (12GB+ recommended) | Often less VRAM than 7B; still use CUDA |
+| Adapter size | ~100MB (order of magnitude) | Smaller base ⇒ often smaller adapter |
 
 ## Troubleshooting
 

@@ -26,7 +26,17 @@ CS_Fall_Research/
 │   └── ci.yml                # Smoke test evaluation (no GPU)
 │
 ├── llm_training/
-│   └── player_summary_advanced.py  # Mistral-7B + QLoRA
+│   ├── __init__.py
+│   ├── player_summary_advanced.py   # CLI entry → player_summary.cli
+│   └── player_summary/              # Modular train/infer (presets, data, LoRA, …)
+│       ├── cli.py
+│       ├── data_pipeline.py
+│       ├── prompts.py
+│       ├── model_setup.py
+│       ├── training_loop.py
+│       ├── inference.py
+│       ├── evaluation_run.py
+│       └── presets/                 # Add a model: new module + registry.py
 │
 ├── scripts/
 │   ├── generate_top10_stats_jsonl.py   # CSV → JSONL (hockey example)
@@ -58,7 +68,7 @@ On GitHub, open these Markdown files in the browser for full setup, custom datas
 
 ### `/llm_training`
 
-**player_summary_advanced.py**: Mistral-7B with QLoRA; supports `--export_predictions` and `--generate_all` for eval.
+**player_summary_advanced.py** dispatches to **`player_summary/`**: QLoRA fine-tuning with pluggable presets (`--model_preset mistral` / `phi-3-mini`). Same flags for `--export_predictions` and `--generate_all`. Register new base models under `player_summary/presets/`.
 
 ### Excluded from Git (via .gitignore)
 
