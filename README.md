@@ -1,5 +1,7 @@
 # Player Summary Generator
 
+##Can large language models generate accurate, fluent player summaries directly from structured hockey statistics?
+
 Fine-tune a **base language model** with QLoRA to generate player summaries from statistics (NVIDIA GPU required). The training code is modular under **`llm_training/player_summary/`**; **[`player_summary_advanced.py`](llm_training/player_summary_advanced.py)** is the CLI entry point.
 
 **Cloned from GitHub?** Use **[docs/getting-started.md](docs/getting-started.md)** (environment, JSONL data, training, evaluation). For the **table-to-text** pattern and how to apply this to your own domain, see **[docs/table-to-text.md](docs/table-to-text.md)**. Schema: **[docs/custom-dataset.md](docs/custom-dataset.md)**. Presets, metrics, and extending models: **[docs/models-and-evaluation.md](docs/models-and-evaluation.md)**.
